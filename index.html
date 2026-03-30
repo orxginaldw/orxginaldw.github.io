@@ -201,22 +201,27 @@
         tr.row-yellow {
             background: #2f2b0e;
             cursor: pointer;
+            transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
         }
 
         tr.row-red {
             background: #2f1013;
             cursor: pointer;
+            transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
         }
 
         tr.row-blue {
             background: #101a33;
             cursor: pointer;
+            transition: transform 0.18s ease, filter 0.18s ease, box-shadow 0.18s ease;
         }
 
         tr.row-yellow:hover,
         tr.row-red:hover,
         tr.row-blue:hover {
-            filter: brightness(1.12);
+            filter: brightness(1.15);
+            transform: translateY(-2px) scale(1.004);
+            box-shadow: inset 0 0 0 1px rgba(255, 255, 255, 0.14);
         }
 
         .title-link {
