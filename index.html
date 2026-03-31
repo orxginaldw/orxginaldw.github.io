@@ -467,6 +467,24 @@
             color: #6b8fd4;
         }
 
+        .patch-modal__preview {
+            margin-bottom: 18px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 1px solid #2a3040;
+            background: #0a0c12;
+            max-height: min(52vh, 420px);
+        }
+
+        .patch-modal__preview img {
+            display: block;
+            width: 100%;
+            height: auto;
+            max-height: min(52vh, 420px);
+            object-fit: contain;
+            object-position: top center;
+        }
+
         .patch-modal__desc {
             font-size: 14px;
             line-height: 1.55;
@@ -580,7 +598,8 @@
                 description: 'Leaked file of merostrap, context: guy was selling a reskin of frostrap for 25$',
                 downloadUrl: 'https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/Merostrap1.6.4.zip',
                 downloadName: '',
-                isLink: true
+                isLink: true,
+                previewImage: 'images/merostrap.png'
             },
             {
                 title: 'lightningreflexes.ahk',
@@ -596,7 +615,8 @@
                 added: 'Sep 16th, 2025',
                 description: 'An autohotkey macro that includes hold m1 macro, green reinforce and roll parry',
                 downloadUrl: 'evil_macro.zip',
-                downloadName: 'evil_macro.zip'
+                downloadName: 'evil_macro.zip',
+                previewImage: 'images/evilmacro.png'
             },
             {
                 title: 'mimo\'s-macro.ahk',
@@ -610,7 +630,7 @@
                 title: 'spamclick.exe',
                 creator: 'grap',
                 added: 'Sep 13th, 2025',
-                description: "An autohotkey hold m1 macro but compiled to exe made by a former godseeker known as 'grap'",
+                description: "An autohotkey hold m1 macro but compiled to exe made by a former godseeker known as 'grap'. When it asks for a password you can put anything, e.g. type 1 and click OK; if it shows the popup again just keep typing it until it is gone. --last sentence by chatgpt",
                 downloadUrl: 'spamclick.exe',
                 downloadName: 'spamclick.exe'
             },
@@ -628,7 +648,8 @@
                 added: 'Sep 6th, 2025',
                 description: "A deepwoken macro menu made in python with alot of different kinds of macro's (all are public on his youtube channel but just put into one menu)",
                 downloadUrl: 'gold_menu_decompiled.zip',
-                downloadName: 'gold_menu_decompiled.zip'
+                downloadName: 'gold_menu_decompiled.zip',
+                previewImage: 'images/goldmenu.png'
             },
             {
                 title: 'akai4.3.exe',
@@ -636,7 +657,8 @@
                 added: 'Sep 5th, 2025',
                 description: "A popular macro made in autohotkey, however despite its positive attention it is not as good as it was anymore, most of the macros just dont work anymore as it was made under old deepwoken ui's",
                 downloadUrl: 'Officer.zip',
-                downloadName: 'akai4.3.zip'
+                downloadName: 'akai4.3.zip',
+                previewImage: 'images/akai.png'
             },
             {
                 title: 'akai4.3-patched.zip',
@@ -644,7 +666,8 @@
                 added: 'Sep 6th, 2025',
                 description: 'Bypasses the liscense check akai 4.3 has',
                 downloadUrl: 'Officer-patched.zip',
-                downloadName: 'Officer-patched.zip'
+                downloadName: 'Officer-patched.zip',
+                previewImage: 'images/akai.png'
             },
             {
                 title: 'akai4.3-decompiled.zip',
@@ -652,7 +675,8 @@
                 added: 'Sep 6th, 2025',
                 description: 'Full source code of akai 4.3, untouched, unpatched you can patch it yourself incase you have trust issues with the pre made patched',
                 downloadUrl: 'Officer-decompiled.zip',
-                downloadName: 'Officer-decompiled.zip'
+                downloadName: 'Officer-decompiled.zip',
+                previewImage: 'images/akai.png'
             },
             {
                 title: 'ClientAppSettings.json',
@@ -669,7 +693,8 @@
                 description: 'hamsternal is a deepwoken external that includes features like voiding mobs, no fall, fly, and more while also providing a lua scripting api to make your own scripts and costs about 5$, that aside this zip file when extracted provides you with a program that you can use to download their latest version for free, launch their program with a bypassed whitelist and use their program for free, however know that if this gets patched i will discontinue cracking their program further as i have made up with the owners :)',
                 downloadUrl: 'https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/HamsternalPatch.zip',
                 downloadName: '',
-                isLink: true
+                isLink: true,
+                previewImage: 'images/hamsternal.png'
             },
             {
                 title: 'evolution.zip, Deprecated',
@@ -678,7 +703,8 @@
                 description: 'A autohotkey macro with a c++ backend imgui with all public macros from popular youtubers and godseekers put into one autohotkey open sourced menu as well as ocr profile switcihing (auto detects when you switch character slot incase you want diff settings for each of your builds) however this project has been discontinued :(',
                 downloadUrl: 'https://www.evolutionary.site/',
                 downloadName: '',
-                isLink: true
+                isLink: true,
+                previewImage: 'images/evolution.png'
             },
             {
                 title: 'astral_client.zip, Deprecated',
@@ -687,7 +713,8 @@
                 description: "Formerly known as 'Kintama Macro' but rebranded now to 'Astral Client' it is an external and was known for these main features: build stealer, server finder by username meaning you could steal anyone's build even get their pre shrine stats, post shrine stats, talents, oath, into a deepwoken.co/builder link with a few simple clicks and server finder allowed you to search your enemies server by going to main menu and putting the user id you want to search and it would say in what server name they are in and luminant but this project has been discontinued :(",
                 downloadUrl: 'https://astralclient.cc',
                 downloadName: '',
-                isLink: true
+                isLink: true,
+                previewImage: 'images/astralclient.png'
             }
         ];
 
@@ -728,6 +755,17 @@
             return 'Description placeholder — replace with details for this patch.';
         }
 
+        function patchModalPreviewHtml(file) {
+            const p = file.previewImage;
+            if (typeof p !== 'string' || !p.trim()) {
+                return '';
+            }
+            const src = escapeHtml(p.trim());
+            return `
+                <div class="patch-modal__label">Preview</div>
+                <div class="patch-modal__preview"><img src="${src}" alt="" loading="lazy" decoding="async" /></div>`;
+        }
+
         function closePatchModal() {
             const modal = document.getElementById('patchModal');
             modal.classList.remove('is-open');
@@ -744,6 +782,7 @@
                 <div class="patch-modal__label">Patch</div>
                 <h2 class="patch-modal__title" id="patchModalTitle">${escapeHtml(file.title)}</h2>
                 <div class="patch-modal__meta patch-modal__meta--${variant}">Created by <strong>${escapeHtml(file.creator)}</strong> · Added ${escapeHtml(file.added)}</div>
+                ${patchModalPreviewHtml(file)}
                 <div class="patch-modal__label">Description</div>
                 <div class="patch-modal__desc">${escapeHtml(patchDescriptionText(file))}</div>
                 <div class="patch-modal__actions">
