@@ -1,0 +1,8 @@
+name = "binwoken"        
+type = "javascript"       
+
+[build]
+upload = "assets"         
+
+[[assets.exclude]]
+path = "*.zip"  
