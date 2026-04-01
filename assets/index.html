@@ -590,13 +590,17 @@
     </div>
 
     <script>
+        const DOWNLOADS_RAW = 'https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/downloads/';
+        function ghDownloads(name) {
+            return DOWNLOADS_RAW + String(name).split('/').map(encodeURIComponent).join('/');
+        }
         const files = [
             {
                 title: 'Merostrap1.6.4.zip',
                 creator: 'orxginaldw',
                 added: 'Mar 29th, 2026',
                 description: 'Leaked file of merostrap, context: guy was selling a reskin of frostrap for 25$',
-                downloadUrl: 'https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/Merostrap1.6.4.zip',
+                downloadUrl: ghDownloads('Merostrap1.6.4.zip'),
                 downloadName: '',
                 isLink: true,
                 previewImage: 'images/merostrap.png'
@@ -606,7 +610,7 @@
                 creator: 'YunisMink',
                 added: 'Dec 8th, 2025',
                 description: 'If you press f during m1 it feints',
-                downloadUrl: 'lightningreflexes.ahk',
+                downloadUrl: ghDownloads('lightningreflexes.ahk'),
                 downloadName: 'lightningreflexes.ahk'
             },
             {
@@ -614,7 +618,7 @@
                 creator: '_desov',
                 added: 'Sep 16th, 2025',
                 description: 'An autohotkey macro that includes hold m1 macro, green reinforce, golden tounge and roll parry',
-                downloadUrl: 'evil_macro.zip',
+                downloadUrl: ghDownloads('evil_macro.zip'),
                 downloadName: 'evil_macro.zip',
                 previewImage: 'images/evilmacro.png'
             },
@@ -623,7 +627,7 @@
                 creator: 'gucc1fly',
                 added: 'Sep 14th, 2025',
                 description: "An autohotkey macro made by a former godseeker known as 'gucc1fly', also known as 'mimo' or 'maciek_cink'. This macro includes a hold m1 macro and a golden tounge macro",
-                downloadUrl: 'mimo\'s macro.ahk',
+                downloadUrl: ghDownloads('mimo\'s macro.ahk'),
                 downloadName: 'mimo\'s macro.ahk'
             },
             {
@@ -631,7 +635,7 @@
                 creator: 'grap',
                 added: 'Sep 13th, 2025',
                 description: "An autohotkey hold m1 macro but compiled to exe made by a former godseeker known as 'grap'. When it asks for a password you can put anything, e.g. type 1 and click OK; if it shows the popup again just keep typing it until it is gone. --last sentence by chatgpt",
-                downloadUrl: 'spamclick.exe',
+                downloadUrl: ghDownloads('spamclick.exe'),
                 downloadName: 'spamclick.exe'
             },
             {
@@ -639,7 +643,7 @@
                 creator: 'orxginaldw',
                 added: 'Sep 13th, 2025',
                 description: 'source code of spamclick.exe',
-                downloadUrl: 'spamclick-decompiled.ahk',
+                downloadUrl: ghDownloads('spamclick-decompiled.ahk'),
                 downloadName: 'spamclick-decompiled.ahk'
             },
             {
@@ -647,7 +651,7 @@
                 creator: 'orxginaldw',
                 added: 'Sep 6th, 2025',
                 description: "A deepwoken macro menu's source code in python with a lot of different kinds of macro's (all are public on his youtube channel but just put into one menu)",
-                downloadUrl: 'gold_menu_decompiled.zip',
+                downloadUrl: ghDownloads('gold_menu_decompiled.zip'),
                 downloadName: 'gold_menu_decompiled.zip',
                 previewImage: 'images/goldmenu.png'
             },
@@ -656,7 +660,7 @@
                 creator: 'pendant',
                 added: 'Sep 5th, 2025',
                 description: "A popular macro made in autohotkey, however despite its positive attention it is not as good as it was anymore, most of the macros just dont work anymore as it was made under old deepwoken ui's",
-                downloadUrl: 'Officer.zip',
+                downloadUrl: ghDownloads('Officer.zip'),
                 downloadName: 'akai4.3.zip',
                 previewImage: 'images/akai.png'
             },
@@ -665,7 +669,7 @@
                 creator: 'orxginaldw',
                 added: 'Sep 6th, 2025',
                 description: 'Bypasses the liscense check akai 4.3 has',
-                downloadUrl: 'Officer-patched.zip',
+                downloadUrl: ghDownloads('Officer-patched.zip'),
                 downloadName: 'Officer-patched.zip',
                 previewImage: 'images/akai.png'
             },
@@ -674,7 +678,7 @@
                 creator: 'orxginaldw',
                 added: 'Sep 6th, 2025',
                 description: 'Full source code of akai 4.3, untouched, unpatched you can patch it yourself incase you have trust issues with the pre made patch',
-                downloadUrl: 'Officer-decompiled.zip',
+                downloadUrl: ghDownloads('Officer-decompiled.zip'),
                 downloadName: 'Officer-decompiled.zip',
                 previewImage: 'images/akai.png'
             },
@@ -683,7 +687,7 @@
                 creator: 'reddice',
                 added: 'Sep 6th, 2025',
                 description: 'Leaked fflags from a godseeker known as mervonz, or so i was told (slightly edited by me and reddice tho)',
-                downloadUrl: 'ClientAppSettings.json',
+                downloadUrl: ghDownloads('ClientAppSettings.json'),
                 downloadName: 'ClientAppSettings.json'
             },
             {
@@ -691,7 +695,7 @@
                 creator: 'orxginaldw',
                 added: 'Mar 19th, 2026',
                 description: 'hamsternal is a deepwoken external that includes features like voiding mobs, no fall, fly, and more while also providing a lua scripting api to make your own scripts and costs about 5$, that aside this zip file when extracted provides you with a program that you can use to download their latest version for free, launch their program with a bypassed whitelist and use their program for free, however know that if this gets patched i will discontinue cracking their program further as i have made up with the owners :)',
-                downloadUrl: 'https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/HamsternalPatch.zip',
+                downloadUrl: ghDownloads('HamsternalPatch.zip'),
                 downloadName: '',
                 isLink: true,
                 previewImage: 'images/hamsternal.png'

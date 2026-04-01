@@ -1,7 +1,5 @@
-addEventListener("fetch", event => {
-  event.respondWith(handleRequest(event.request))
-})
-
-async function handleRequest(request) {
-  return fetch(new URL("index.html", import.meta.url))
-}
+export default {
+    async fetch(request, env) {
+        return env.ASSETS.fetch(request);
+    },
+};
