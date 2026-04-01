@@ -64,7 +64,32 @@
     const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     const ext=t=>(String(t).split(",")[0].trim().match(/\.([a-z0-9]+)$/i)||[])[1]?.toLowerCase()||"zip";
     const dlCountLabel=n=>{const x=n==null||n===""?0:Number(n);const v=Number.isFinite(x)?x:0;return v===1?"1 download":`${v} downloads`;};
-    const dl=async f=>{if(f.trackId){try{const r=await fetch("/api/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:f.trackId})});if(r.ok){const j=await r.json();countsMap[f.trackId]=j.count;if(active&&active.trackId===f.trackId){mDlCount.textContent=dlCountLabel(j.count);}render(visibleList);}}catch{}}if(f.isLink){window.open(f.downloadUrl,"_blank");return;}const a=document.createElement("a");a.href=f.downloadUrl;if(f.downloadName)a.download=f.downloadName;a.style.display="none";document.body.appendChild(a);a.click();a.remove();};
+    const LS_TRACK="count";
+    const tracked=(()=>{try{const j=localStorage.getItem(LS_TRACK);const a=j?JSON.parse(j):[];return new Set(Array.isArray(a)?a:[]);}catch{return new Set();}})();
+    const saveTracked=()=>{try{localStorage.setItem(LS_TRACK,JSON.stringify([...tracked]));}catch{}};
+    const dl=async f=>{
+      if(f.trackId&&!tracked.has(f.trackId)){
+        try{
+          const r=await fetch("/api/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:f.trackId})});
+          if(r.ok){
+            const j=await r.json();
+            countsMap[f.trackId]=j.count;
+            tracked.add(f.trackId);
+            saveTracked();
+            if(active&&active.trackId===f.trackId){mDlCount.textContent=dlCountLabel(j.count);}
+            render(visibleList);
+          }
+        }catch{}
+      }
+      if(f.isLink){window.open(f.downloadUrl,"_blank");return;}
+      const a=document.createElement("a");
+      a.href=f.downloadUrl;
+      if(f.downloadName)a.download=f.downloadName;
+      a.style.display="none";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+    };
     const closeModal=()=>{active=null;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");};
     const openModal=f=>{active=f;mTitle.textContent=f.title;mMeta.textContent=`Created by ${f.creator} • Added ${f.added}`;if(f.trackId){const n=countsMap[f.trackId];mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(n);}else{mDlCount.hidden=true;}mDesc.innerHTML=(f.description||"").trim();if(f.previewImage){mPreview.src=f.previewImage;mPreviewWrap.hidden=false;}else{mPreviewWrap.hidden=true;mPreview.removeAttribute("src");}modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");};
     function render(list){visibleList=list;grid.innerHTML="";list.forEach((f,i)=>{const c=document.createElement("article");c.className="card";c.style.animationDelay=`${Math.min(i,12)*22}ms`;const dc=f.trackId!=null?countsMap[f.trackId]:null;const dline=f.trackId!=null?`<p class="meta dl-line">${esc(dlCountLabel(dc))}</p>`:"";c.innerHTML=`<div class="kind">.${ext(f.title)}</div><h3 class="title">${esc(f.title)}</h3><p class="meta">by ${esc(f.creator)}</p><p class="meta">added ${esc(f.added)}</p>${dline}<button type="button" class="btn">Download</button>`;c.addEventListener("click",()=>openModal(f));c.querySelector(".btn").addEventListener("click",e=>{e.stopPropagation();dl(f);});grid.appendChild(c);});countNow.textContent=list.length;countAll.textContent=files.length;}

@@ -8,9 +8,7 @@ function json(data, status = 200) {
 export default {
     async fetch(request, env) {
         const url = new URL(request.url);
-        let path = url.pathname;
-        while (path.length > 1 && path.endsWith("/")) path = path.slice(0, -1);
-        if (!path) path = "/";
+        const path = url.pathname.replace(/\/+$/, "") || "/";
 
         if (path === "/api/counts" && request.method === "GET") {
             if (!env.DB) return json({ error: "db" }, 503);
