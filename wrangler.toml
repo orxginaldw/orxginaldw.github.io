@@ -1,6 +1,3 @@
-name = "binwoken"                
-compatibility_date = "2026-04-01"  
-
-[site]
-bucket = "."                     
-exclude = ["*.zip"]        
+name = "binwoken"
+main = "index.js"
+compatibility_date = "2026-04-01"
