@@ -2,6 +2,11 @@ name = "binwoken"
 main = "index.js"
 compatibility_date = "2026-04-01"
 
+[[d1_databases]]
+binding = "DB"
+database_name = "binwoken"
+database_id = "31f18fcd-376a-4d79-a94c-6300aca38a61"
+
 [assets]
 directory = "./assets"
 binding = "ASSETS"
