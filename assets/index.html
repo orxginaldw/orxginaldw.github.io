@@ -67,6 +67,7 @@
     const LS_TRACK="count";
     const tracked=(()=>{try{const j=localStorage.getItem(LS_TRACK);const a=j?JSON.parse(j):[];return new Set(Array.isArray(a)?a:[]);}catch{return new Set();}})();
     const saveTracked=()=>{try{localStorage.setItem(LS_TRACK,JSON.stringify([...tracked]));}catch{}};
+    const dlAnchor=(href,name)=>{const a=document.createElement("a");a.href=href;if(name)a.download=name;a.style.display="none";document.body.appendChild(a);a.click();a.remove();};
     const dl=async f=>{
       if(f.trackId&&!tracked.has(f.trackId)){
         try{
@@ -82,13 +83,21 @@
         }catch{}
       }
       if(f.isLink){window.open(f.downloadUrl,"_blank");return;}
-      const a=document.createElement("a");
-      a.href=f.downloadUrl;
-      if(f.downloadName)a.download=f.downloadName;
-      a.style.display="none";
-      document.body.appendChild(a);
-      a.click();
-      a.remove();
+      let useBlob=false;
+      try{useBlob=new URL(f.downloadUrl,location.origin).hostname==="raw.githubusercontent.com";}catch{}
+      if(useBlob){
+        try{
+          const r=await fetch(f.downloadUrl);
+          if(r.ok){
+            const b=await r.blob();
+            const u=URL.createObjectURL(b);
+            dlAnchor(u,f.downloadName||f.title.split(",")[0].trim());
+            setTimeout(()=>URL.revokeObjectURL(u),1440);
+            return;
+          }
+        }catch{}
+      }
+      dlAnchor(f.downloadUrl,f.downloadName);
     };
     const closeModal=()=>{active=null;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");};
     const openModal=f=>{active=f;mTitle.textContent=f.title;mMeta.textContent=`Created by ${f.creator} • Added ${f.added}`;if(f.trackId){const n=countsMap[f.trackId];mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(n);}else{mDlCount.hidden=true;}mDesc.innerHTML=(f.description||"").trim();if(f.previewImage){mPreview.src=f.previewImage;mPreviewWrap.hidden=false;}else{mPreviewWrap.hidden=true;mPreview.removeAttribute("src");}modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");};
