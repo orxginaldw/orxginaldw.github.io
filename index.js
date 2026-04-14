@@ -9,6 +9,10 @@ function json(data, status = 200) {
 
 async function recaptcha(token, env) {
     const secret = env.RECAPTCHA_SECRET;
+    const body = new URLSearchParams({
+        secret,
+        response: token,
+    });
     const response = await fetch(
         "https://www.google.com/recaptcha/api/siteverify",
         {
@@ -16,7 +20,7 @@ async function recaptcha(token, env) {
             headers: {
                 "content-type": "application/x-www-form-urlencoded",
             },
-            body: `secret=${encodeURIComponent(secret)}&response=${encodeURIComponent(token)}`,
+            body,
         },
     );
     const result = await response.json();
