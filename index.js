@@ -1,4 +1,5 @@
 import { find } from "./serverfinder.js";
+import { env as runtimeEnv } from "cloudflare:workers";
 
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
@@ -7,8 +8,8 @@ function json(data, status = 200) {
     });
 }
 
-async function recaptcha(token, env) {
-    const secret = env.RECAPTCHA_SECRET;
+async function recaptcha(token) {
+    const secret = runtimeEnv.RECAPTCHA_SECRET;
     const body = new URLSearchParams({
         secret,
         response: token,
@@ -53,7 +54,7 @@ async function track(request, env) {
 
 async function search(request, env) {
     const { userId, token } = await request.json();
-    if (!(await recaptcha(token, env))) {
+    if (!(await recaptcha(token))) {
         return json({ error: "captcha" }, 403);
     }
     return json(await find(userId, env));
