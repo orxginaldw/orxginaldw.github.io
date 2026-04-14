@@ -33,7 +33,7 @@ async function track(request, env) {
 
 async function search(request, env) {
     const { userId } = await request.json();
-    return json(await find(String(userId).trim(), env));
+    return json(await find(userId, env));
 }
 
 export default {
