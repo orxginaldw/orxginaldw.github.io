@@ -1,3 +1,5 @@
+import { find, run } from "./serverfinder.js";
+
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
         status,
@@ -44,6 +46,25 @@ export default {
             return json({ id, count: row.count });
         }
 
+        if (path === "/api/find" && request.method === "POST") {
+            if (!env.DB) return json({ error: "db" }, 503);
+            let body = {};
+            try {
+                body = await request.json();
+            } catch {
+                return json({ error: "json" }, 400);
+            }
+            const userId =
+                typeof body.userId === "string" || typeof body.userId === "number"
+                    ? String(body.userId).trim()
+                    : "";
+            if (!userId) return json({ error: "userId" }, 400);
+            return json(await find(userId, env));
+        }
+
         return env.ASSETS.fetch(request);
+    },
+    async scheduled(_controller, env, ctx) {
+        ctx.waitUntil(run(env));
     },
 };

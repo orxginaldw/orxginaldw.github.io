@@ -10,3 +10,6 @@ database_id = "31f18fcd-376a-4d79-a94c-6300aca38a61"
 [assets]
 directory = "./assets"
 binding = "ASSETS"
+
+[triggers]
+crons = ["*/3 * * * *"]

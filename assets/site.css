@@ -55,6 +55,8 @@ body{
 }
 .chips{display:flex;gap:8px;flex-wrap:wrap}
 .chip{
+  display:inline-block;
+  margin:0;
   text-decoration:none;
   color:#d7e0f7;
   border:1px solid var(--line);border-radius:999px;padding:7px 11px;
@@ -63,8 +65,13 @@ body{
   letter-spacing:.15em;text-transform:uppercase;
   transition:border-color .22s ease,color .22s ease,transform .22s ease,background-color .22s ease;
 }
+button.chip{cursor:pointer;appearance:none}
 .chip:visited{color:#d7e0f7}
 .chip:hover{border-color:#43577c;color:#fff;transform:translateY(-1px)}
+.sf-panel{width:min(420px,100%)}
+.sf-label{display:block;margin:0 0 8px;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.02em}
+.sf-input{margin-bottom:14px}
+.sf-search{width:100%}
 .page{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:124px 14px 28px}
 .toolbar{display:flex;gap:10px;margin:0 0 8px}
 .search{

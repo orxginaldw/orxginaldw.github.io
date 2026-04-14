@@ -15,7 +15,7 @@
       <div class="brand">Binwoken</div>
       <nav class="chips">
         <a class="chip" href="https://discord.gg/RzGnytNDRR" target="_blank">Discord</a>
-        <a class="chip" href="https://binwoken.sh/" target="_blank">binwoken.sh</a>
+        <button type="button" class="chip" id="serverFinderOpen">Server Finder</button>
         <a class="chip" href="https://github.com/orxginaldw/orxginaldw.github.io/" target="_blank">GitHub</a>
       </nav>
     </div>
@@ -41,6 +41,18 @@
       <button id="mDownload" class="btn" type="button">Download</button>
     </div>
   </div>
+  <div id="serverFinderModal" class="modal" aria-hidden="true">
+    <div id="serverFinderBackdrop" class="backdrop"></div>
+    <div class="panel sf-panel" role="dialog" aria-modal="true" aria-labelledby="sfTitle">
+      <button id="serverFinderClose" class="close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg></button>
+      <div class="kicker">Lookup</div>
+      <h2 id="sfTitle" class="m-title">Server Finder</h2>
+      <label class="sf-label" for="sfUserId">Roblox User ID</label>
+      <input class="search sf-input" id="sfUserId" type="text" placeholder="Enter user ID" autocomplete="off">
+      <button type="button" class="btn sf-search" id="sfSearch">Search</button>
+      <p id="sfResult" class="m-meta"></p>
+    </div>
+  </div>
   <script>
     const files=[
       {trackId:"pistachio_cream_menu",type:"zip",title:"Pistachio Cream Menu",creator:"orxginaldw",added:"Apr 4th, 2026",description:"Modified version with the license check removed. In its current state most features barely work or are outright broken, the UI is the only reason its considered good.",downloadUrl:"https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/downloads/PCM_PATCH.zip",downloadName:"PCM_PATCH.zip",previewImage:"images/pistachiocreammenu.png"},
@@ -64,6 +76,7 @@
     ];
     const grid=document.getElementById("grid"),q=document.getElementById("q"),countNow=document.getElementById("countNow"),countAll=document.getElementById("countAll");
     const modal=document.getElementById("modal"),backdrop=document.getElementById("backdrop"),closeBtn=document.getElementById("close"),mTitle=document.getElementById("mTitle"),mMeta=document.getElementById("mMeta"),mDlCount=document.getElementById("mDlCount"),mDesc=document.getElementById("mDesc"),mPreviewWrap=document.getElementById("mPreviewWrap"),mPreview=document.getElementById("mPreview"),mDownload=document.getElementById("mDownload");
+    const serverFinderModal=document.getElementById("serverFinderModal"),serverFinderBackdrop=document.getElementById("serverFinderBackdrop"),serverFinderOpen=document.getElementById("serverFinderOpen"),serverFinderClose=document.getElementById("serverFinderClose"),sfUserId=document.getElementById("sfUserId"),sfSearch=document.getElementById("sfSearch"),sfResult=document.getElementById("sfResult");
     let active=null,visibleList=files,countsMap={};
     const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     const ext=f=>f.type;
@@ -104,13 +117,21 @@
       dlAnchor(f.downloadUrl,f.downloadName);
     };
     const closeModal=()=>{active=null;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");};
+    const openServerFinderModal=()=>{serverFinderModal.classList.add("open");serverFinderModal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");sfResult.textContent="";sfUserId.focus();};
+    const closeServerFinderModal=()=>{serverFinderModal.classList.remove("open");serverFinderModal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");};
+    const searchServerFinder=async()=>{const userId=sfUserId.value.trim();if(!userId){sfResult.textContent="Enter user ID.";return;}sfResult.textContent="Searching...";try{const r=await fetch("/api/find",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId})});if(!r.ok){sfResult.textContent="Search failed.";return;}const j=await r.json();if(j&&j.code===0){sfResult.textContent=`jobId: ${j.jobId} | placeId: ${j.placeId}`;return;}sfResult.textContent="Not found.";}catch{sfResult.textContent="Search failed.";}}
     const openModal=f=>{active=f;mTitle.textContent=f.title;mMeta.textContent=`Created by ${f.creator} • Added ${f.added}`;if(f.trackId){const n=countsMap[f.trackId];mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(n);}else{mDlCount.hidden=true;}mDesc.innerHTML=(f.description||"").trim();if(f.previewImage){mPreview.src=f.previewImage;mPreviewWrap.hidden=false;}else{mPreviewWrap.hidden=true;mPreview.removeAttribute("src");}modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");};
     function render(list){visibleList=list;grid.innerHTML="";list.forEach(f=>{const c=document.createElement("article");c.className="card";const dc=f.trackId!=null?countsMap[f.trackId]:null;const dline=f.trackId!=null?`<p class="meta dl-line">${esc(dlCountLabel(dc))}</p>`:"";c.innerHTML=`<div class="kind">.${ext(f)}</div><h3 class="title">${esc(f.title)}</h3><p class="meta">by ${esc(f.creator)}</p><p class="meta">added ${esc(f.added)}</p>${dline}<button type="button" class="btn">Download</button>`;c.addEventListener("click",()=>openModal(f));c.querySelector(".btn").addEventListener("click",e=>{e.stopPropagation();dl(f);});grid.appendChild(c);});countNow.textContent=list.length;countAll.textContent=files.length;}
     q.addEventListener("input",()=>{const s=q.value.trim().toLowerCase();render(!s?files:files.filter(f=>f.title.toLowerCase().includes(s)||f.creator.toLowerCase().includes(s)));});
     mDownload.addEventListener("click",()=>{if(active)dl(active);});
     backdrop.addEventListener("click",closeModal);
     closeBtn.addEventListener("click",closeModal);
-    document.addEventListener("keydown",e=>{if(e.key==="Escape"&&modal.classList.contains("open"))closeModal();});
+    serverFinderOpen.addEventListener("click",openServerFinderModal);
+    serverFinderBackdrop.addEventListener("click",closeServerFinderModal);
+    serverFinderClose.addEventListener("click",closeServerFinderModal);
+    sfSearch.addEventListener("click",searchServerFinder);
+    sfUserId.addEventListener("keydown",e=>{if(e.key==="Enter")searchServerFinder();});
+    document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(serverFinderModal.classList.contains("open")){closeServerFinderModal();return;}if(modal.classList.contains("open"))closeModal();});
     async function loadCounts(){try{const r=await fetch("/api/counts");if(r.ok)countsMap=await r.json();}catch{countsMap={}}render(visibleList);if(active&&active.trackId){mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(countsMap[active.trackId]);}}
     render(files);
     loadCounts();
