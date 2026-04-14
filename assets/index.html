@@ -51,7 +51,9 @@
       <label class="sf-label" for="sfUserId">Roblox User ID</label>
       <input class="search sf-input" id="sfUserId" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
       <div class="sf-captcha-wrap">
-        <div class="g-recaptcha" data-sitekey="6LcnvLcsAAAAAHOtAFsNb8gUzYtbcLGwqEzMG5gu" data-theme="dark" data-size="compact" data-callback="onCaptchaPass" data-expired-callback="onCaptchaReset" data-error-callback="onCaptchaReset"></div>
+        <div class="sf-captcha-scale">
+          <div class="g-recaptcha" data-sitekey="6LcnvLcsAAAAAHOtAFsNb8gUzYtbcLGwqEzMG5gu" data-theme="dark" data-size="normal" data-callback="onCaptchaPass" data-expired-callback="onCaptchaReset" data-error-callback="onCaptchaReset"></div>
+        </div>
       </div>
       <button type="button" class="btn sf-search" id="sfSearch" disabled>Search</button>
       <p id="sfResult" class="m-meta"></p>

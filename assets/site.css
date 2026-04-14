@@ -74,12 +74,19 @@ button.chip{cursor:pointer;appearance:none}
 .sf-search{width:100%}
 .sf-captcha-wrap{
   margin:0 0 10px;
-  padding:4px;
-  width:fit-content;
+  padding:6px 4px 4px;
+  width:100%;
   max-width:100%;
+  display:flex;
+  justify-content:center;
   border:1px solid rgba(63,98,162,.35);
   border-radius:10px;
   background:linear-gradient(180deg,rgba(16,23,38,.95),rgba(11,17,30,.95));
+}
+.sf-captcha-scale{
+  transform:scale(.52);
+  transform-origin:center top;
+  margin-bottom:-38px;
 }
 .sf-search:disabled{
   cursor:not-allowed;
