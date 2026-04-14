@@ -7,7 +7,7 @@ function json(data, status = 200) {
     });
 }
 
-async function counts(request, env) {
+async function count(request, env) {
     const { results } = await env.DB.prepare(
         "SELECT id, count FROM downloads",
     ).all();
@@ -40,17 +40,23 @@ export default {
     async fetch(request, env) {
         const url = new URL(request.url);
         const path = url.pathname;
-        const routes = {
-            "/api/counts": counts,
+        const publicRoutes = {
+            "/api/counts": count,
+        };
+        const privateRoutes = {
             "/api/track": track,
             "/api/find": search,
         };
-        const handler = routes[path];
-        if (handler) {
+        const publicHandler = publicRoutes[path];
+        if (publicHandler) {
+            return publicHandler(request, env);
+        }
+        const privateHandler = privateRoutes[path];
+        if (privateHandler) {
             if (request.headers.get("x-api-token") !== env.API_TOKEN) {
                 return json({ error: "unauthorized" }, 401);
             }
-            return handler(request, env);
+            return privateHandler(request, env);
         }
 
         return env.ASSETS.fetch(request);
