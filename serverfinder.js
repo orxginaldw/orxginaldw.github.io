@@ -49,17 +49,19 @@ async function get(placeId, cookie) {
 async function merge(placeId, cookies) {
     const merged = new Map();
     for (const cookie of cookies) {
-        const part = await get(placeId, cookie);
-        for (const [jobId, tokens] of part) {
-            let set = merged.get(jobId);
-            if (!set) {
-                set = new Set();
-                merged.set(jobId, set);
+        try {
+            const part = await get(placeId, cookie);
+            for (const [jobId, tokens] of part) {
+                let set = merged.get(jobId);
+                if (!set) {
+                    set = new Set();
+                    merged.set(jobId, set);
+                }
+                for (const token of tokens) {
+                    set.add(token);
+                }
             }
-            for (const token of tokens) {
-                set.add(token);
-            }
-        }
+        } catch {}
     }
     return merged;
 }
@@ -71,17 +73,22 @@ export async function run(env) {
     const list = cookies.results.map((row) => row.cookie);
     const now = Date.now();
     for (const placeId of PLACE_IDS) {
-        const rows = await merge(placeId, list);
-        await env.DB.prepare(
-            "DELETE FROM serverfinder WHERE place_id = ?",
-        ).bind(placeId).run();
-        for (const [jobId, tokens] of rows) {
+        try {
+            const rows = await merge(placeId, list);
+            if (rows.size === 0) {
+                continue;
+            }
             await env.DB.prepare(
-                "INSERT INTO serverfinder (place_id, job_id, player_tokens, date) VALUES (?, ?, ?, ?)",
-            )
-                .bind(placeId, jobId, JSON.stringify([...tokens]), now)
-                .run();
-        }
+                "DELETE FROM serverfinder WHERE place_id = ?",
+            ).bind(placeId).run();
+            for (const [jobId, tokens] of rows) {
+                await env.DB.prepare(
+                    "INSERT INTO serverfinder (place_id, job_id, player_tokens, date) VALUES (?, ?, ?, ?)",
+                )
+                    .bind(placeId, jobId, JSON.stringify([...tokens]), now)
+                    .run();
+            }
+        } catch {}
     }
 }
 
