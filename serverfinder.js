@@ -97,12 +97,12 @@ export async function find(userId, env) {
     const stamp = await env.DB.prepare(
         "SELECT MAX(date) AS date FROM serverfinder",
     ).first();
+    if (!stamp.date || now - stamp.date > 60000) {
+        await run(env);
+    }
     const rows = await env.DB.prepare(
         "SELECT place_id, job_id, player_tokens FROM serverfinder",
     ).all();
-    if (!stamp.date || now - stamp.date > 60000) {
-        run(env).catch(() => {});
-    }
 
     const cookies = await env.DB.prepare(
         "SELECT cookie FROM cookies ORDER BY id",
