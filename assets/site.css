@@ -73,20 +73,77 @@ button.chip{cursor:pointer;appearance:none}
 .sf-input{margin-bottom:14px}
 .sf-search{width:100%}
 .sf-captcha-wrap{
+  position:relative;
   margin:0 0 10px;
-  padding:6px 4px 4px;
+  padding:10px 12px 8px;
   width:100%;
   max-width:100%;
   display:flex;
-  justify-content:center;
+  flex-direction:column;
+  align-items:stretch;
+  gap:8px;
   border:1px solid rgba(63,98,162,.35);
   border-radius:10px;
   background:linear-gradient(180deg,rgba(16,23,38,.95),rgba(11,17,30,.95));
 }
-.sf-captcha-scale{
-  display:inline-block;
-  vertical-align:top;
-  zoom:.52;
+.sf-captcha-custom{width:100%}
+.sf-captcha-trigger{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  width:100%;
+  padding:10px 12px;
+  border:1px solid rgba(90,118,168,.45);
+  border-radius:8px;
+  background:rgba(10,15,26,.6);
+  color:#e6edf7;
+  font:inherit;
+  font-size:14px;
+  text-align:left;
+  cursor:pointer;
+  transition:border-color .2s ease,background .2s ease;
+}
+.sf-captcha-trigger:hover:not(:disabled){border-color:#5c7ab8;background:rgba(14,20,36,.85)}
+.sf-captcha-trigger:disabled{cursor:wait;opacity:.65}
+.sf-captcha-box{
+  position:relative;
+  flex-shrink:0;
+  width:22px;
+  height:22px;
+  border:2px solid rgba(120,145,190,.75);
+  border-radius:3px;
+  background:rgba(8,12,22,.9);
+  transition:border-color .2s ease,background .2s ease;
+}
+.sf-captcha-custom--verified .sf-captcha-box{
+  border-color:#4a7bc8;
+  background:#3d6bb0;
+}
+.sf-captcha-custom--verified .sf-captcha-box::after{
+  content:"";
+  position:absolute;
+  left:6px;
+  top:2px;
+  width:5px;
+  height:11px;
+  border:2px solid #fff;
+  border-top:none;
+  border-left:none;
+  transform:rotate(45deg);
+}
+.sf-captcha-label{flex:1;user-select:none}
+.sf-captcha-legal{margin:0;font-size:10px;line-height:1.45;color:#8a9ab8}
+.sf-captcha-legal a{color:#a8c0e8;text-decoration:underline}
+.sf-recaptcha-hidden{
+  position:absolute;
+  width:1px;
+  height:1px;
+  padding:0;
+  margin:-1px;
+  overflow:hidden;
+  clip:rect(0,0,0,0);
+  white-space:nowrap;
+  border:0;
 }
 .sf-search:disabled{
   cursor:not-allowed;
