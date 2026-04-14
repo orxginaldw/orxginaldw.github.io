@@ -7,6 +7,23 @@ function json(data, status = 200) {
     });
 }
 
+async function recaptcha(token, request, env) {
+    const body = new URLSearchParams({
+        secret: env.RECAPTCHA_SECRET || "",
+        response: token || "",
+    });
+    const response = await fetch(
+        "https://www.google.com/recaptcha/api/siteverify",
+        {
+            method: "POST",
+            body,
+        },
+    );
+    const result = await response.json();
+    const expected = new URL(request.url).hostname;
+    return result.success === true && result.hostname === expected;
+}
+
 async function count(request, env) {
     const { results } = await env.DB.prepare(
         "SELECT id, count FROM downloads",
@@ -32,7 +49,10 @@ async function track(request, env) {
 }
 
 async function search(request, env) {
-    const { userId } = await request.json();
+    const { userId, token } = await request.json();
+    if (!(await recaptcha(token, request, env))) {
+        return json({ error: "captcha" }, 403);
+    }
     return json(await find(userId, env));
 }
 
@@ -40,23 +60,14 @@ export default {
     async fetch(request, env) {
         const url = new URL(request.url);
         const path = url.pathname;
-        const publicRoutes = {
+        const routes = {
             "/api/counts": count,
-        };
-        const privateRoutes = {
             "/api/track": track,
             "/api/find": search,
         };
-        const publicHandler = publicRoutes[path];
-        if (publicHandler) {
-            return publicHandler(request, env);
-        }
-        const privateHandler = privateRoutes[path];
-        if (privateHandler) {
-            if (request.headers.get("x-api-token") !== env.API_TOKEN) {
-                return json({ error: "unauthorized" }, 401);
-            }
-            return privateHandler(request, env);
+        const handler = routes[path];
+        if (handler) {
+            return handler(request, env);
         }
 
         return env.ASSETS.fetch(request);
