@@ -81,10 +81,6 @@ button.chip{cursor:pointer;appearance:none}
   border-radius:10px;
   background:linear-gradient(180deg,rgba(16,23,38,.95),rgba(11,17,30,.95));
 }
-.sf-captcha-wrap .g-recaptcha{
-  transform:scale(.92);
-  transform-origin:left top;
-}
 .sf-search:disabled{
   cursor:not-allowed;
   opacity:.55;
