@@ -84,9 +84,9 @@ button.chip{cursor:pointer;appearance:none}
   background:linear-gradient(180deg,rgba(16,23,38,.95),rgba(11,17,30,.95));
 }
 .sf-captcha-scale{
-  transform:scale(.52);
-  transform-origin:center top;
-  margin-bottom:-38px;
+  display:inline-block;
+  vertical-align:top;
+  zoom:.52;
 }
 .sf-search:disabled{
   cursor:not-allowed;
