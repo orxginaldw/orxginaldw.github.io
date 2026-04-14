@@ -8,7 +8,6 @@ function json(data, status = 200) {
 }
 
 async function counts(request, env) {
-    if (request.method !== "GET") return json({ error: "method" }, 405);
     const { results } = await env.DB.prepare(
         "SELECT id, count FROM downloads",
     ).all();
@@ -18,15 +17,7 @@ async function counts(request, env) {
 }
 
 async function track(request, env) {
-    if (request.method !== "POST") return json({ error: "method" }, 405);
-    let body = {};
-    try {
-        body = await request.json();
-    } catch {
-        return json({ error: "json" }, 400);
-    }
-    const id = typeof body.id === "string" ? body.id.slice(0, 128) : "";
-    if (!id) return json({ error: "id" }, 400);
+    const { id } = await request.json();
     await env.DB.prepare(
         "INSERT INTO downloads (id, count) VALUES (?, 1) ON CONFLICT(id) DO UPDATE SET count = count + 1",
     )
@@ -41,25 +32,14 @@ async function track(request, env) {
 }
 
 async function search(request, env) {
-    if (request.method !== "POST") return json({ error: "method" }, 405);
-    let body = {};
-    try {
-        body = await request.json();
-    } catch {
-        return json({ error: "json" }, 400);
-    }
-    const userId =
-        typeof body.userId === "string" || typeof body.userId === "number"
-            ? String(body.userId).trim()
-            : "";
-    if (!/^[0-9]+$/.test(userId)) return json({ error: "userId" }, 400);
-    return json(await find(userId, env));
+    const { userId } = await request.json();
+    return json(await find(String(userId).trim(), env));
 }
 
 export default {
     async fetch(request, env) {
         const url = new URL(request.url);
-        const path = url.pathname.replace(/\/+$/, "") || "/";
+        const path = url.pathname;
         const routes = {
             "/api/counts": counts,
             "/api/track": track,
@@ -67,7 +47,9 @@ export default {
         };
         const handler = routes[path];
         if (handler) {
-            if (!env.DB) return json({ error: "db" }, 503);
+            if (request.headers.get("x-api-token") !== env.API_TOKEN) {
+                return json({ error: "unauthorized" }, 401);
+            }
             return handler(request, env);
         }
 
