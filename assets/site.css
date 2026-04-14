@@ -73,14 +73,16 @@ button.chip{cursor:pointer;appearance:none}
 .sf-input{margin-bottom:14px}
 .sf-search{width:100%}
 .sf-captcha-wrap{
-  margin:0 0 12px;
-  padding:8px;
+  margin:0 0 10px;
+  padding:4px;
+  width:fit-content;
+  max-width:100%;
   border:1px solid rgba(63,98,162,.35);
-  border-radius:12px;
+  border-radius:10px;
   background:linear-gradient(180deg,rgba(16,23,38,.95),rgba(11,17,30,.95));
 }
 .sf-captcha-wrap .g-recaptcha{
-  transform:scale(.95);
+  transform:scale(.92);
   transform-origin:left top;
 }
 .sf-search:disabled{
