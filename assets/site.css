@@ -200,7 +200,7 @@ button.chip{cursor:pointer;appearance:none}
 .modal.open{display:flex}
 .backdrop{position:absolute;inset:0;background:rgba(2,4,9,.78);backdrop-filter:blur(7px)}
 .panel{
-  position:relative;z-index:1;width:min(700px,100%);max-height:90vh;overflow:auto;
+  position:relative;z-index:1;width:min(700px,100%);max-height:90vh;overflow:hidden;
   border:1px solid var(--line);border-radius:16px;padding:14px;
   background:linear-gradient(180deg,#151d2f,#101624);
   box-shadow:0 26px 84px rgba(0,0,0,.58);
