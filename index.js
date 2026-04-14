@@ -8,14 +8,22 @@ function json(data, status = 200) {
 }
 
 async function recaptcha(token, request, env) {
+    const responseToken = String(token || "").trim();
     const body = new URLSearchParams({
         secret: env.RECAPTCHA_SECRET || "",
-        response: token || "",
+        response: responseToken,
+        remoteip:
+            request.headers.get("cf-connecting-ip") ||
+            request.headers.get("x-forwarded-for") ||
+            "",
     });
     const response = await fetch(
         "https://www.google.com/recaptcha/api/siteverify",
         {
             method: "POST",
+            headers: {
+                "content-type": "application/x-www-form-urlencoded",
+            },
             body,
         },
     );
@@ -38,6 +46,7 @@ async function recaptcha(token, request, env) {
         success: result.success === true,
         expected,
         actual,
+        tokenLength: responseToken.length,
         errorCodes: Array.isArray(result["error-codes"])
             ? result["error-codes"]
             : [],
