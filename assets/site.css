@@ -72,6 +72,26 @@ button.chip{cursor:pointer;appearance:none}
 .sf-label{display:block;margin:0 0 8px;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.02em}
 .sf-input{margin-bottom:14px}
 .sf-search{width:100%}
+.sf-captcha-wrap{
+  margin:0 0 12px;
+  padding:8px;
+  border:1px solid rgba(63,98,162,.35);
+  border-radius:12px;
+  background:linear-gradient(180deg,rgba(16,23,38,.95),rgba(11,17,30,.95));
+}
+.sf-captcha-wrap .g-recaptcha{
+  transform:scale(.95);
+  transform-origin:left top;
+}
+.sf-search:disabled{
+  cursor:not-allowed;
+  opacity:.55;
+  filter:none;
+  transform:none;
+  border-color:#334563;
+  background:linear-gradient(180deg,#2b3c5e,#223450);
+}
+.sf-search:disabled:hover{filter:none;transform:none;border-color:#334563}
 .page{position:relative;z-index:1;max-width:1280px;margin:0 auto;padding:124px 14px 28px}
 .toolbar{display:flex;gap:10px;margin:0 0 8px}
 .search{
