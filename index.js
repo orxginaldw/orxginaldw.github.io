@@ -20,8 +20,28 @@ async function recaptcha(token, request, env) {
         },
     );
     const result = await response.json();
-    const expected = new URL(request.url).hostname;
-    return result.success === true && result.hostname === expected;
+    const normalize = (value) =>
+        String(value || "")
+            .trim()
+            .toLowerCase()
+            .replace(/\.$/, "");
+    const expected = normalize(new URL(request.url).hostname);
+    const actual = normalize(result.hostname);
+    const ok =
+        result.success === true &&
+        !!actual &&
+        (actual === expected ||
+            actual === `www.${expected}` ||
+            expected === `www.${actual}`);
+    return {
+        ok,
+        success: result.success === true,
+        expected,
+        actual,
+        errorCodes: Array.isArray(result["error-codes"])
+            ? result["error-codes"]
+            : [],
+    };
 }
 
 async function count(request, env) {
@@ -50,8 +70,9 @@ async function track(request, env) {
 
 async function search(request, env) {
     const { userId, token } = await request.json();
-    if (!(await recaptcha(token, request, env))) {
-        return json({ error: "captcha" }, 403);
+    const check = await recaptcha(token, request, env);
+    if (!check.ok) {
+        return json({ error: "captcha", check }, 403);
     }
     return json(await find(userId, env));
 }
