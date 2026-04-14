@@ -7,16 +7,8 @@ function json(data, status = 200) {
     });
 }
 
-async function recaptcha(token, request, env) {
-    const responseToken = String(token || "").trim();
-    const body = new URLSearchParams({
-        secret: env.RECAPTCHA_SECRET || "",
-        response: responseToken,
-        remoteip:
-            request.headers.get("cf-connecting-ip") ||
-            request.headers.get("x-forwarded-for") ||
-            "",
-    });
+async function recaptcha(token, env) {
+    const secret = env.RECAPTCHA_SECRET;
     const response = await fetch(
         "https://www.google.com/recaptcha/api/siteverify",
         {
@@ -24,33 +16,11 @@ async function recaptcha(token, request, env) {
             headers: {
                 "content-type": "application/x-www-form-urlencoded",
             },
-            body,
+            body: `secret=${encodeURIComponent(secret)}&response=${encodeURIComponent(token)}`,
         },
     );
     const result = await response.json();
-    const normalize = (value) =>
-        String(value || "")
-            .trim()
-            .toLowerCase()
-            .replace(/\.$/, "");
-    const expected = normalize(new URL(request.url).hostname);
-    const actual = normalize(result.hostname);
-    const ok =
-        result.success === true &&
-        !!actual &&
-        (actual === expected ||
-            actual === `www.${expected}` ||
-            expected === `www.${actual}`);
-    return {
-        ok,
-        success: result.success === true,
-        expected,
-        actual,
-        tokenLength: responseToken.length,
-        errorCodes: Array.isArray(result["error-codes"])
-            ? result["error-codes"]
-            : [],
-    };
+    return result.success === true;
 }
 
 async function count(request, env) {
@@ -79,9 +49,8 @@ async function track(request, env) {
 
 async function search(request, env) {
     const { userId, token } = await request.json();
-    const check = await recaptcha(token, request, env);
-    if (!check.ok) {
-        return json({ error: "captcha", check }, 403);
+    if (!(await recaptcha(token, env))) {
+        return json({ error: "captcha" }, 403);
     }
     return json(await find(userId, env));
 }
