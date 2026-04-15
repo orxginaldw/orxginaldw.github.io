@@ -49,27 +49,40 @@ async function track(request, env) {
 }
 
 async function search(request, env) {
-    const { userId, token } = await request.json();
-    if (!(await recaptcha(token, env))) {
-        return json({ error: "recaptcha" }, 403);
+    try {
+        const { userId, token } = await request.json();
+        if (!(await recaptcha(token, env))) {
+            return json({ error: "recaptcha" }, 403);
+        }
+        return json(await find(userId, env));
+    } catch (error) {
+        return json(
+            { error: "find", message: String(error?.message || error) },
+            500,
+        );
     }
-    return json(await find(userId, env));
 }
 
 export default {
     async fetch(request, env) {
-        const url = new URL(request.url);
-        const path = url.pathname;
-        const routes = {
-            "/api/counts": count,
-            "/api/track": track,
-            "/api/find": search,
-        };
-        const handler = routes[path];
-        if (handler) {
-            return handler(request, env);
+        try {
+            const url = new URL(request.url);
+            const path = url.pathname;
+            const routes = {
+                "/api/counts": count,
+                "/api/track": track,
+                "/api/find": search,
+            };
+            const handler = routes[path];
+            if (handler) {
+                return handler(request, env);
+            }
+            return env.ASSETS.fetch(request);
+        } catch (error) {
+            return json(
+                { error: "worker", message: String(error?.message || error) },
+                500,
+            );
         }
-
-        return env.ASSETS.fetch(request);
     },
 };
