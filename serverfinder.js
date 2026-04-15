@@ -1,4 +1,5 @@
 const PLACE_IDS = ["6473861193", "5735553160", "6032399813"];
+let running = null;
 
 async function request(url, init) {
     for (let tries = 0; tries < 10; tries++) {
@@ -63,6 +64,10 @@ async function merge(placeId, cookies) {
 }
 
 export async function run(env) {
+    if (running) {
+        return running;
+    }
+    running = (async () => {
     const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
     const now = Date.now();
     for (const placeId of PLACE_IDS) {
@@ -82,6 +87,12 @@ export async function run(env) {
                     .run();
             }
         } catch {}
+    }
+    })();
+    try {
+        await running;
+    } finally {
+        running = null;
     }
 }
 
