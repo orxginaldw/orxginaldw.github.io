@@ -46,7 +46,10 @@
     <div class="panel sf-panel" role="dialog" aria-modal="true" aria-labelledby="sfTitle">
       <button id="serverFinderClose" class="close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg></button>
       <div class="kicker">Lookup</div>
-      <h2 id="sfTitle" class="m-title">Server Finder</h2>
+      <div class="sf-title-row">
+        <h2 id="sfTitle" class="m-title sf-title">Server Finder</h2>
+        <p class="sf-disclaimer">From 12 AM to 12 PM (UTC+00), search results may be inaccurate.</p>
+      </div>
       <label class="sf-label" for="sfUserId">Roblox User ID</label>
       <input class="search sf-input" id="sfUserId" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
       <div class="sf-captcha-wrap">
