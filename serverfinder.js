@@ -12,10 +12,7 @@ async function collect(env) {
                 await client.close();
             } catch {}
         }
-        client = new MongoClient(atlas, {
-            maxPoolSize: 3,
-            minPoolSize: 0,
-        });
+        client = new MongoClient(atlas);
         await client.connect();
         uri = atlas;
     }
