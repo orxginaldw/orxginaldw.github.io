@@ -62,112 +62,36 @@ async function merge(placeId, cookies) {
     return merged;
 }
 
-function build(env, placeId, rows, prior, now) {
-    const statements = [];
-    if (rows.size === 0) {
-        if (prior.size > 0) {
-            statements.push(
-                env.DB.prepare("DELETE FROM serverfinder WHERE place_id = ?").bind(
-                    placeId,
-                ),
-            );
-        }
-        return statements;
-    }
-
-    for (const jobId of prior.keys()) {
-        if (!rows.has(jobId)) {
-            statements.push(
-                env.DB.prepare(
-                    "DELETE FROM serverfinder WHERE place_id = ? AND job_id = ?",
-                ).bind(placeId, jobId),
-            );
-        }
-    }
-
-    for (const [jobId, tokens] of rows) {
-        const next = JSON.stringify([...tokens].sort());
-        const prev = prior.get(jobId);
-        if (prev == null) {
-            statements.push(
-                env.DB.prepare(
-                    "INSERT INTO serverfinder (place_id, job_id, player_tokens, date) VALUES (?, ?, ?, ?)",
-                ).bind(placeId, jobId, next, now),
-            );
-        } else if (prev !== next) {
-            statements.push(
-                env.DB.prepare(
-                    "UPDATE serverfinder SET player_tokens = ?, date = ? WHERE place_id = ? AND job_id = ?",
-                ).bind(next, now, placeId, jobId),
-            );
-        }
-    }
-
-    return statements;
-}
-
-function normal(env, placeId, rows, prior, now) {
-    const statements = [];
-    for (const [jobId, prev] of prior) {
-        const tokens = rows.get(jobId);
-        if (!tokens) continue;
-        const next = JSON.stringify([...tokens].sort());
-        if (prev !== next) {
-            statements.push(
-                env.DB.prepare(
-                    "UPDATE serverfinder SET player_tokens = ?, date = ? WHERE place_id = ? AND job_id = ?",
-                ).bind(next, now, placeId, jobId),
-            );
-        }
-    }
-    return statements;
-}
-
-async function sync(env, placeId, list, now, refresh) {
-    const rows = await merge(placeId, list);
-    const existing = await env.DB.prepare(
-        "SELECT job_id, player_tokens FROM serverfinder WHERE place_id = ?",
-    ).bind(placeId).all();
-    const prior = new Map(
-        existing.results.map((row) => [row.job_id, row.player_tokens]),
-    );
-    const statements = refresh
-        ? build(env, placeId, rows, prior, now)
-        : normal(env, placeId, rows, prior, now);
-    if (statements.length) {
-        await env.DB.batch(statements);
-    }
-}
-
-export async function run(env, refresh = true) {
+export async function run(env) {
     const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
     const now = Date.now();
     for (const placeId of PLACE_IDS) {
         try {
-            await sync(env, placeId, list, now, refresh);
+            const rows = await merge(placeId, list);
+            if (rows.size === 0) {
+                continue;
+            }
+            await env.DB.prepare(
+                "DELETE FROM serverfinder WHERE place_id = ?",
+            ).bind(placeId).run();
+            for (const [jobId, tokens] of rows) {
+                await env.DB.prepare(
+                    "INSERT INTO serverfinder (place_id, job_id, player_tokens, date) VALUES (?, ?, ?, ?)",
+                )
+                    .bind(placeId, jobId, JSON.stringify([...tokens]), now)
+                    .run();
+            }
         } catch {}
-    }
-    await env.DB.prepare(
-        "INSERT INTO meta (key, value) VALUES ('date', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-    ).bind(now).run();
-    if (refresh) {
-        await env.DB.prepare(
-            "INSERT INTO meta (key, value) VALUES ('stamp', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-        ).bind(now).run();
     }
 }
 
 export async function find(userId, env) {
     const now = Date.now();
     const stamp = await env.DB.prepare(
-        "SELECT value FROM meta WHERE key = 'date'",
-    ).first("value");
-    if (!stamp || now - Number(stamp) > 60_000) {
-        const fullStamp = await env.DB.prepare(
-            "SELECT value FROM meta WHERE key = 'stamp'",
-        ).first("value");
-        const refresh = !fullStamp || now - Number(fullStamp) > 300_000;
-        await run(env, refresh);
+        "SELECT MAX(date) AS date FROM serverfinder",
+    ).first();
+    if (!stamp.date || now - stamp.date > 60_000) {
+        await run(env);
     }
     const rows = await env.DB.prepare(
         "SELECT place_id, job_id, player_tokens FROM serverfinder",
