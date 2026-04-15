@@ -1,6 +1,6 @@
 import { MongoClient } from "mongodb";
 
-const PLACE_IDS = ["6473861193", "5735553160", "6032399813"];
+const PLACE_IDS = ["6473861193"];
 let client = null;
 let uri = "";
 
