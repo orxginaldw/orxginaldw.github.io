@@ -26,7 +26,7 @@ async function recaptcha(token, env) {
     ).success === true;
 }
 
-async function count(request, env) {
+async function count(_request, env) {
     const { results } = await env.DB.prepare(
         "SELECT id, count FROM downloads",
     ).all();
@@ -73,7 +73,7 @@ async function search(request, env) {
 }
 
 export default {
-    async fetch(request, env, ctx) {
+    async fetch(request, env) {
         const url = new URL(request.url);
         const path = url.pathname;
         const routes = {
