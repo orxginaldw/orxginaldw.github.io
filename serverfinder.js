@@ -171,8 +171,17 @@ export async function find(userId, env) {
         "SELECT value FROM meta WHERE key = 'date'",
     ).first("value");
     const rows = await env.DB.prepare(
-        "SELECT place_id, job_id, player_tokens FROM serverfinder",
+        "SELECT job_id, player_tokens FROM serverfinder",
     ).all();
+    const lookupRows = await env.DB.prepare(
+        "SELECT job_id, server_name, realm_name FROM serverdeepwoken",
+    ).all();
+    const lookup = new Map(
+        lookupRows.results.map((row) => [
+            row.job_id,
+            { serverName: row.server_name, realmName: row.realm_name },
+        ]),
+    );
     if (!date || now - Number(date) > 60_000) {
         const stamp = await env.DB.prepare(
             "SELECT value FROM meta WHERE key = 'stamp'",
@@ -195,14 +204,13 @@ export async function find(userId, env) {
             players.push({
                 token,
                 jobId: row.job_id,
-                placeId: row.place_id,
             });
         }
     }
 
     for (let index = 0; index < players.length; index += 100) {
         const chunk = players.slice(index, index + 100);
-        const job = new Map(chunk.map((x) => [x.jobId, x]));
+        const jobIds = new Set(chunk.map((x) => x.jobId));
         const body = JSON.stringify(
             chunk.map(({ token, jobId }) => ({
                 token,
@@ -221,9 +229,15 @@ export async function find(userId, env) {
         });
         for (const item of batch.data) {
             if (item.imageUrl !== avatarUrl) continue;
-            const row = job.get(item.requestId);
-            if (!row) continue;
-            return { code: 0, placeId: row.placeId, jobId: row.jobId };
+            if (!jobIds.has(item.requestId)) continue;
+            const details = lookup.get(item.requestId);
+            if (!details) continue;
+            return {
+                code: 0,
+                jobId: item.requestId,
+                serverName: details.serverName,
+                realmName: details.realmName,
+            };
         }
     }
 
