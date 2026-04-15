@@ -8,23 +8,20 @@ function json(data, status = 200) {
 }
 
 async function recaptcha(token, env) {
-    const secret = env.RECAPTCHA_SECRET;
-    const body = new URLSearchParams({
-        secret,
-        response: token,
-    });
-    const response = await fetch(
-        "https://www.google.com/recaptcha/api/siteverify",
-        {
-            method: "POST",
-            headers: {
-                "content-type": "application/x-www-form-urlencoded",
-            },
-            body,
-        },
-    );
-    const result = await response.json();
-    return result.success === true;
+    return (
+        await (
+            await fetch("https://www.google.com/recaptcha/api/siteverify", {
+                method: "POST",
+                headers: {
+                    "content-type": "application/x-www-form-urlencoded",
+                },
+                body: new URLSearchParams({
+                    secret: env.RECAPTCHA_SECRET,
+                    response: token,
+                }),
+            })
+        ).json()
+    ).success === true;
 }
 
 async function count(request, env) {
@@ -54,7 +51,7 @@ async function track(request, env) {
 async function search(request, env) {
     const { userId, token } = await request.json();
     if (!(await recaptcha(token, env))) {
-        return json({ error: "captcha" }, 403);
+        return json({ error: "recaptcha" }, 403);
     }
     return json(await find(userId, env));
 }
