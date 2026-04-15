@@ -90,7 +90,7 @@ export default {
     },
     async queue(batch, env) {
         for (const message of batch.messages) {
-            await run(env, message.body.refresh);
+            await run(env);
             message.ack();
         }
     },

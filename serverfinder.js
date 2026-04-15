@@ -1,14 +1,39 @@
+import { MongoClient } from "mongodb";
+
 const PLACE_IDS = ["6473861193", "5735553160", "6032399813"];
-let running = null;
+let client = null;
+let uri = "";
+
+async function collect(env) {
+    const atlas = env.MONGO_URI;
+    if (!client || uri !== atlas) {
+        if (client) {
+            try {
+                await client.close();
+            } catch {}
+        }
+        client = new MongoClient(atlas, {
+            maxPoolSize: 3,
+            minPoolSize: 0,
+        });
+        await client.connect();
+        uri = atlas;
+    }
+    const db = client.db("binwoken");
+    return {
+        serverfinder: db.collection("serverfinder"),
+        serverdeepwoken: db.collection("serverdeepwoken"),
+    };
+}
 
 async function request(url, init) {
     for (let tries = 0; tries < 10; tries++) {
         try {
-            const request = await globalThis.fetch(url, init);
-            if (!request.ok) {
-                throw new Error(String(request.status));
+            const response = await globalThis.fetch(url, init);
+            if (!response.ok) {
+                throw new Error(String(response.status));
             }
-            return await request.json();
+            return await response.json();
         } catch (error) {
             if (tries === 9) {
                 throw error;
@@ -26,19 +51,21 @@ async function get(placeId, cookie) {
             ? `https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100&cursor=${encodeURIComponent(cursor)}`
             : `https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100`;
         const doc = await request(url, { headers: { Cookie: cookie } });
-        for (const server of doc.data) {
+        for (const server of doc.data || []) {
             const jobId = server.id;
             let set = out.get(jobId);
             if (!set) {
                 set = new Set();
                 out.set(jobId, set);
             }
-            for (const token of server.playerTokens) {
+            for (const token of server.playerTokens || []) {
                 set.add(token);
             }
         }
         cursor = doc.nextPageCursor || "";
-        if (!cursor) break;
+        if (!cursor) {
+            break;
+        }
     }
     return out;
 }
@@ -63,132 +90,72 @@ async function merge(placeId, cookies) {
     return merged;
 }
 
-function build(env, placeId, rows, prior, now) {
-    const statements = [];
+export async function run(env) {
+    const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
+    const now = Date.now();
+    const rows = new Map();
+    for (const placeId of PLACE_IDS) {
+        try {
+            const part = await merge(placeId, list);
+            for (const [jobId, tokens] of part) {
+                let set = rows.get(jobId);
+                if (!set) {
+                    set = new Set();
+                    rows.set(jobId, set);
+                }
+                for (const token of tokens) {
+                    set.add(token);
+                }
+            }
+        } catch {}
+    }
     if (rows.size === 0) {
-        if (prior.size > 0) {
-            statements.push(
-                env.DB.prepare("DELETE FROM serverfinder WHERE place_id = ?").bind(
-                    placeId,
-                ),
-            );
-        }
-        return statements;
+        return;
     }
-    for (const jobId of prior.keys()) {
-        if (!rows.has(jobId)) {
-            statements.push(
-                env.DB.prepare(
-                    "DELETE FROM serverfinder WHERE place_id = ? AND job_id = ?",
-                ).bind(placeId, jobId),
-            );
-        }
-    }
+    const { serverfinder } = await collect(env);
+    await serverfinder.deleteMany({});
+    const docs = [];
     for (const [jobId, tokens] of rows) {
-        const next = JSON.stringify([...tokens].sort());
-        const prev = prior.get(jobId);
-        if (prev == null) {
-            statements.push(
-                env.DB.prepare(
-                    "INSERT INTO serverfinder (place_id, job_id, player_tokens, date) VALUES (?, ?, ?, ?)",
-                ).bind(placeId, jobId, next, now),
-            );
-        } else if (prev !== next) {
-            statements.push(
-                env.DB.prepare(
-                    "UPDATE serverfinder SET player_tokens = ?, date = ? WHERE place_id = ? AND job_id = ?",
-                ).bind(next, now, placeId, jobId),
-            );
-        }
+        docs.push({
+            job_id: jobId,
+            player_tokens: JSON.stringify([...tokens]),
+            date: now,
+        });
     }
-    return statements;
-}
-
-function set(env, placeId, rows, prior, now) {
-    const statements = [];
-    for (const [jobId, prev] of prior) {
-        const tokens = rows.get(jobId);
-        if (!tokens) continue;
-        const next = JSON.stringify([...tokens].sort());
-        if (prev !== next) {
-            statements.push(
-                env.DB.prepare(
-                    "UPDATE serverfinder SET player_tokens = ?, date = ? WHERE place_id = ? AND job_id = ?",
-                ).bind(next, now, placeId, jobId),
-            );
-        }
-    }
-    return statements;
-}
-
-async function sync(env, placeId, list, now, refresh) {
-    const rows = await merge(placeId, list);
-    const existing = await env.DB.prepare(
-        "SELECT job_id, player_tokens FROM serverfinder WHERE place_id = ?",
-    ).bind(placeId).all();
-    const prior = new Map(
-        existing.results.map((row) => [row.job_id, row.player_tokens]),
-    );
-    const statements = refresh
-        ? build(env, placeId, rows, prior, now)
-        : set(env, placeId, rows, prior, now);
-    if (statements.length) {
-        await env.DB.batch(statements);
-    }
-}
-
-export async function run(env, refresh = true) {
-    if (running) {
-        return running;
-    }
-    running = (async () => {
-        const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
-        const now = Date.now();
-        for (const placeId of PLACE_IDS) {
-            try {
-                await sync(env, placeId, list, now, refresh);
-            } catch {}
-        }
-        await env.DB.prepare(
-            "INSERT INTO meta (key, value) VALUES ('date', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-        ).bind(now).run();
-        if (refresh) {
-            await env.DB.prepare(
-                "INSERT INTO meta (key, value) VALUES ('stamp', ?) ON CONFLICT(key) DO UPDATE SET value = excluded.value",
-            ).bind(now).run();
-        }
-    })();
-    try {
-        await running;
-    } finally {
-        running = null;
+    if (docs.length) {
+        await serverfinder.insertMany(docs, { ordered: false });
     }
 }
 
 export async function find(userId, env) {
     const now = Date.now();
-    const date = await env.DB.prepare(
-        "SELECT value FROM meta WHERE key = 'date'",
-    ).first("value");
-    const rows = await env.DB.prepare(
-        "SELECT job_id, player_tokens FROM serverfinder",
-    ).all();
-    const lookupRows = await env.DB.prepare(
-        "SELECT job_id, server_name, realm_name FROM serverdeepwoken",
-    ).all();
+    const { serverfinder, serverdeepwoken } = await collect(env);
+    const latest = await serverfinder
+        .find({}, { projection: { _id: 0, date: 1 } })
+        .sort({ date: -1 })
+        .limit(1)
+        .toArray();
+    const stamp = latest[0] ? Number(latest[0].date) : 0;
+    if (!stamp || now - stamp > 60_000) {
+        await env.SERVERFINDER_QUEUE.send({});
+    }
+    const [rows, lookupRows] = await Promise.all([
+        serverfinder
+            .find({}, { projection: { _id: 0, job_id: 1, player_tokens: 1 } })
+            .toArray(),
+        serverdeepwoken
+            .find(
+                {},
+                { projection: { _id: 0, job_id: 1, server_name: 1, realm_name: 1 } },
+            )
+            .toArray(),
+    ]);
     const lookup = new Map(
-        lookupRows.results.map((row) => [
+        lookupRows.map((row) => [
             row.job_id,
             { serverName: row.server_name, realmName: row.realm_name },
         ]),
     );
-    if (!date || now - Number(date) > 60_000) {
-        const stamp = await env.DB.prepare(
-            "SELECT value FROM meta WHERE key = 'stamp'",
-        ).first("value");
-        const refresh = !stamp || now - Number(stamp) > 300_000;
-        await env.SERVERFINDER_QUEUE.send({ refresh });
-    }
 
     const auth = JSON.parse(env.COOKIE_1)[0];
     const userid = String(userId).trim();
@@ -196,11 +163,23 @@ export async function find(userId, env) {
         `https://thumbnails.roblox.com/v1/users/avatar-headshot?userIds=${encodeURIComponent(userid)}&size=150x150&format=Png&isCircular=false`,
         {},
     );
-    const avatarUrl = avatar.data[0].imageUrl;
+    const avatarUrl = avatar?.data?.[0]?.imageUrl;
+    if (!avatarUrl) {
+        return { code: 1 };
+    }
 
     const players = [];
-    for (const row of rows.results) {
-        for (const token of JSON.parse(row.player_tokens)) {
+    for (const row of rows) {
+        let parsed;
+        try {
+            parsed = JSON.parse(row.player_tokens);
+        } catch {
+            continue;
+        }
+        if (!Array.isArray(parsed)) {
+            continue;
+        }
+        for (const token of parsed) {
             players.push({
                 token,
                 jobId: row.job_id,
@@ -208,9 +187,9 @@ export async function find(userId, env) {
         }
     }
 
-    for (let index = 0; index < players.length; index += 100) {
-        const chunk = players.slice(index, index + 100);
-        const jobIds = new Set(chunk.map((x) => x.jobId));
+    for (let i = 0; i < players.length; i += 100) {
+        const chunk = players.slice(i, i + 100);
+        const job = new Map(chunk.map((x) => [x.jobId, x]));
         const body = JSON.stringify(
             chunk.map(({ token, jobId }) => ({
                 token,
@@ -227,14 +206,21 @@ export async function find(userId, env) {
             },
             body,
         });
-        for (const item of batch.data) {
-            if (item.imageUrl !== avatarUrl) continue;
-            if (!jobIds.has(item.requestId)) continue;
-            const details = lookup.get(item.requestId);
-            if (!details) continue;
+        for (const item of batch.data || []) {
+            if (item.imageUrl !== avatarUrl) {
+                continue;
+            }
+            const row = job.get(item.requestId);
+            if (!row) {
+                continue;
+            }
+            const details = lookup.get(row.jobId);
+            if (!details) {
+                continue;
+            }
             return {
                 code: 0,
-                jobId: item.requestId,
+                jobId: row.jobId,
                 serverName: details.serverName,
                 realmName: details.realmName,
             };
