@@ -1,4 +1,4 @@
-import { find } from "./serverfinder.js";
+import { find, run } from "./serverfinder.js";
 
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
@@ -57,7 +57,7 @@ async function search(request, env) {
 }
 
 export default {
-    async fetch(request, env) {
+    async fetch(request, env, ctx) {
         const url = new URL(request.url);
         const path = url.pathname;
         const routes = {
@@ -71,5 +71,11 @@ export default {
         }
 
         return env.ASSETS.fetch(request);
+    },
+    async queue(batch, env) {
+        for (const message of batch.messages) {
+            await run(env, message.body.refresh);
+            message.ack();
+        }
     },
 };

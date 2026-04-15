@@ -178,7 +178,7 @@ export async function find(userId, env) {
             "SELECT value FROM meta WHERE key = 'stamp'",
         ).first("value");
         const refresh = !stamp || now - Number(stamp) > 300_000;
-        run(env, refresh).catch(() => {});
+        await env.SERVERFINDER_QUEUE.send({ refresh });
     }
 
     const auth = JSON.parse(env.COOKIE_1)[0];
