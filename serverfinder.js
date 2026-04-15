@@ -69,19 +69,6 @@ export async function run(env) {
     }
     running = (async () => {
         const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
-        console.log("[serverfinder] cookies_count", list.length);
-        await env.DB.prepare(
-            "CREATE TABLE IF NOT EXISTS cookies (id INTEGER PRIMARY KEY, cookie TEXT NOT NULL)",
-        ).run();
-        await env.DB.prepare("DELETE FROM cookies").run();
-        for (const [index, cookie] of list.entries()) {
-            console.log(`[serverfinder] cookie_${index + 1}`, cookie);
-            await env.DB.prepare(
-                "INSERT INTO cookies (id, cookie) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET cookie = excluded.cookie",
-            )
-                .bind(index + 1, cookie)
-                .run();
-        }
         const now = Date.now();
         for (const placeId of PLACE_IDS) {
             try {
