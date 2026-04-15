@@ -1,5 +1,7 @@
 import { find, run } from "./serverfinder.js";
 
+const SERVERFINDER_COUNT_ID = "serverfinder_searches";
+
 function json(data, status = 200) {
     return new Response(JSON.stringify(data), {
         status,
@@ -53,7 +55,21 @@ async function search(request, env) {
     if (!(await recaptcha(token, env))) {
         return json({ error: "recaptcha" }, 403);
     }
-    return json(await find(userId, env));
+    const result = await find(userId, env);
+    if (result && result.code === 0) {
+        await env.DB.prepare(
+            "INSERT INTO downloads (id, count) VALUES (?, 1) ON CONFLICT(id) DO UPDATE SET count = count + 1",
+        )
+            .bind(SERVERFINDER_COUNT_ID)
+            .run();
+        const row = await env.DB.prepare(
+            "SELECT count FROM downloads WHERE id = ?",
+        )
+            .bind(SERVERFINDER_COUNT_ID)
+            .first();
+        result.searchCount = row?.count ?? 0;
+    }
+    return json(result);
 }
 
 export default {
