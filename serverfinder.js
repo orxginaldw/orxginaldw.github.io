@@ -68,26 +68,39 @@ export async function run(env) {
         return running;
     }
     running = (async () => {
-    const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
-    const now = Date.now();
-    for (const placeId of PLACE_IDS) {
-        try {
-            const rows = await merge(placeId, list);
-            if (rows.size === 0) {
-                continue;
-            }
+        const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
+        console.log("[serverfinder] cookies_count", list.length);
+        await env.DB.prepare(
+            "CREATE TABLE IF NOT EXISTS cookies (id INTEGER PRIMARY KEY, cookie TEXT NOT NULL)",
+        ).run();
+        await env.DB.prepare("DELETE FROM cookies").run();
+        for (const [index, cookie] of list.entries()) {
+            console.log(`[serverfinder] cookie_${index + 1}`, cookie);
             await env.DB.prepare(
-                "DELETE FROM serverfinder WHERE place_id = ?",
-            ).bind(placeId).run();
-            for (const [jobId, tokens] of rows) {
+                "INSERT INTO cookies (id, cookie) VALUES (?, ?) ON CONFLICT(id) DO UPDATE SET cookie = excluded.cookie",
+            )
+                .bind(index + 1, cookie)
+                .run();
+        }
+        const now = Date.now();
+        for (const placeId of PLACE_IDS) {
+            try {
+                const rows = await merge(placeId, list);
+                if (rows.size === 0) {
+                    continue;
+                }
                 await env.DB.prepare(
-                    "INSERT INTO serverfinder (place_id, job_id, player_tokens, date) VALUES (?, ?, ?, ?)",
-                )
-                    .bind(placeId, jobId, JSON.stringify([...tokens]), now)
-                    .run();
-            }
-        } catch {}
-    }
+                    "DELETE FROM serverfinder WHERE place_id = ?",
+                ).bind(placeId).run();
+                for (const [jobId, tokens] of rows) {
+                    await env.DB.prepare(
+                        "INSERT INTO serverfinder (place_id, job_id, player_tokens, date) VALUES (?, ?, ?, ?)",
+                    )
+                        .bind(placeId, jobId, JSON.stringify([...tokens]), now)
+                        .run();
+                }
+            } catch {}
+        }
     })();
     try {
         await running;
