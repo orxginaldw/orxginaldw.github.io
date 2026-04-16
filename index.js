@@ -72,6 +72,22 @@ async function search(request, env) {
     return json(result);
 }
 
+async function runFinder(_request, env) {
+    try {
+        await run(env);
+        return json({ ok: true });
+    } catch (e) {
+        return json({ error: String(e?.message ?? e) }, 500);
+    }
+}
+
+async function chime(_request, env) {
+    const obj = await env.CHIME_MATCHES.get("chime.json");
+    return new Response(obj?.body, {
+        headers: { "content-type": "application/json; charset=utf-8" },
+    });
+}
+
 export default {
     async fetch(request, env) {
         const url = new URL(request.url);
@@ -80,6 +96,8 @@ export default {
             "/api/counts": count,
             "/api/track": track,
             "/api/find": search,
+            "/api/serverfinder/run": runFinder,
+            "/public/api/chime.json": chime,
         };
         const handler = routes[path];
         if (handler) {
