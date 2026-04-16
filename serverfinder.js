@@ -1,6 +1,7 @@
 import { MongoClient } from "mongodb";
 
-const PLACE_IDS = ["6473861193"];
+const PLACE_IDS = ["6473861193", "5735553160", "6032399813"];
+
 let client = null;
 let uri = "";
 
@@ -40,75 +41,62 @@ async function request(url, init) {
     }
 }
 
-async function get(placeId, cookie) {
-    const out = new Map();
-    let cursor = "";
-    for (;;) {
-        const url = cursor
-            ? `https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100&cursor=${encodeURIComponent(cursor)}`
-            : `https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100`;
-        const doc = await request(url, { headers: { Cookie: cookie } });
-        for (const server of doc.data || []) {
-            const jobId = server.id;
-            let set = out.get(jobId);
-            if (!set) {
-                set = new Set();
-                out.set(jobId, set);
-            }
-            for (const token of server.playerTokens || []) {
-                set.add(token);
-            }
+function merge(rows, doc) {
+    for (const server of doc.data || []) {
+        const jobId = server.id;
+        let set = rows.get(jobId);
+        if (!set) {
+            set = new Set();
+            rows.set(jobId, set);
         }
-        cursor = doc.nextPageCursor || "";
-        if (!cursor) {
-            break;
+        for (const token of server.playerTokens || []) {
+            set.add(token);
         }
     }
-    return out;
 }
 
-async function merge(placeId, cookies) {
-    const merged = new Map();
-    for (const cookie of cookies) {
-        try {
-            const part = await get(placeId, cookie);
-            for (const [jobId, tokens] of part) {
-                let set = merged.get(jobId);
-                if (!set) {
-                    set = new Set();
-                    merged.set(jobId, set);
-                }
-                for (const token of tokens) {
-                    set.add(token);
-                }
-            }
-        } catch {}
+function serialize(rows) {
+    const o = {};
+    for (const [jobId, tokens] of rows) {
+        o[jobId] = [...tokens];
     }
-    return merged;
+    return JSON.stringify(o);
 }
 
-export async function run(env) {
-    const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
-    const now = Date.now();
-    const rows = new Map();
-    for (const placeId of PLACE_IDS) {
-        try {
-            const part = await merge(placeId, list);
-            for (const [jobId, tokens] of part) {
-                let set = rows.get(jobId);
-                if (!set) {
-                    set = new Set();
-                    rows.set(jobId, set);
-                }
-                for (const token of tokens) {
-                    set.add(token);
-                }
-            }
-        } catch {}
+function deserialize(json) {
+    const o = JSON.parse(json || "{}");
+    const m = new Map();
+    for (const [k, arr] of Object.entries(o)) {
+        m.set(k, new Set(Array.isArray(arr) ? arr : []));
     }
-    if (rows.size === 0) {
-        return;
-    }
+    return m;
+}
+
+async function load(db) {
+    const row = await db.prepare(
+        'SELECT place, cookie, cursor, "index", "now" FROM serverfinder WHERE id = ?',
+    )
+        .bind("state")
+        .first();
+    return row || null;
+}
+
+async function save(db, place, cookie, cursor, rows, now) {
+    const index = serialize(rows);
+    await db.prepare(
+        'REPLACE INTO serverfinder (id, place, cookie, cursor, "index", "now") VALUES (?, ?, ?, ?, ?, ?)',
+    )
+        .bind("state", place, cookie, cursor, index, now)
+        .run();
+}
+
+async function clear(db) {
+    await db.prepare("DELETE FROM serverfinder WHERE id = ?")
+        .bind("state")
+        .run();
+}
+
+async function commit(env, rows, now) {
     const { serverfinder } = await collect(env);
     await serverfinder.deleteMany({});
     const docs = [];
@@ -124,18 +112,93 @@ export async function run(env) {
     }
 }
 
-export async function find(userId, env) {
-    const now = Date.now();
-    const { serverfinder, serverdeepwoken } = await collect(env);
-    const latest = await serverfinder
-        .find({}, { projection: { _id: 0, date: 1 } })
-        .sort({ date: -1 })
-        .limit(1)
-        .toArray();
-    const stamp = latest[0] ? Number(latest[0].date) : 0;
-    if (!stamp || now - stamp > 60_000) {
-        await env.SERVERFINDER_QUEUE.send({});
+export async function run(env) {
+    const db = env.DB;
+    const list = [...JSON.parse(env.COOKIE_1), ...JSON.parse(env.COOKIE_2)];
+    if (!list.length) {
+        await clear(db);
+        return;
     }
+
+    const existing = await load(db);
+    let place;
+    let cookie;
+    let cursor;
+    let rows;
+    let now;
+
+    if (existing) {
+        place = existing.place;
+        cookie = existing.cookie;
+        cursor = existing.cursor ?? "";
+        rows = deserialize(existing.index);
+        now = existing.now;
+    } else {
+        place = 0;
+        cookie = 0;
+        cursor = "";
+        rows = new Map();
+        now = Date.now();
+    }
+
+    let fetches = 0;
+    while (fetches < 32) {
+        if (place >= PLACE_IDS.length) {
+            if (rows.size === 0) {
+                await clear(db);
+                return;
+            }
+            await commit(env, rows, now);
+            await clear(db);
+            return;
+        }
+
+        const placeId = PLACE_IDS[place];
+        if (cookie >= list.length) {
+            place++;
+            cookie = 0;
+            cursor = "";
+            continue;
+        }
+
+        const string = list[cookie];
+        const url = cursor
+            ? `https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100&cursor=${encodeURIComponent(cursor)}`
+            : `https://games.roblox.com/v1/games/${placeId}/servers/Public?limit=100`;
+
+        let doc;
+        try {
+            doc = await request(url, { headers: { Cookie: string } });
+        } catch {
+            cookie++;
+            cursor = "";
+            if (cookie >= list.length) {
+                place++;
+                cookie = 0;
+            }
+            continue;
+        }
+
+        fetches++;
+        merge(rows, doc);
+        const next = doc.nextPageCursor || "";
+        if (next) {
+            cursor = next;
+        } else {
+            cookie++;
+            cursor = "";
+            if (cookie >= list.length) {
+                place++;
+                cookie = 0;
+            }
+        }
+    }
+
+    await save(db, place, cookie, cursor, rows, now);
+}
+
+export async function find(userId, env) {
+    const { serverfinder, serverdeepwoken } = await collect(env);
     const [rows, lookupRows] = await Promise.all([
         serverfinder
             .find({}, { projection: { _id: 0, job_id: 1, player_tokens: 1 } })

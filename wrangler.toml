@@ -12,10 +12,5 @@ database_id = "31f18fcd-376a-4d79-a94c-6300aca38a61"
 directory = "./assets"
 binding = "ASSETS"
 
-[[queues.producers]]
-binding = "SERVERFINDER_QUEUE"
-queue = "serverfinder-refresh"
-
-[[queues.consumers]]
-queue = "serverfinder-refresh"
-max_batch_size = 1
+[triggers]
+crons = ["*/3 * * * *"]

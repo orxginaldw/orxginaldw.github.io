@@ -51,30 +51,25 @@ async function track(request, env) {
 }
 
 async function search(request, env) {
-    try {
-        const { userId, token } = await request.json();
-        if (!(await recaptcha(token, env))) {
-            return json({ error: "recaptcha" }, 403);
-        }
-        const result = await find(userId, env);
-        if (result && result.code === 0) {
-            await env.DB.prepare(
-                "INSERT INTO downloads (id, count) VALUES (?, 1) ON CONFLICT(id) DO UPDATE SET count = count + 1",
-            )
-                .bind(SERVERFINDER_COUNT_ID)
-                .run();
-            const row = await env.DB.prepare(
-                "SELECT count FROM downloads WHERE id = ?",
-            )
-                .bind(SERVERFINDER_COUNT_ID)
-                .first();
-            result.searchCount = row?.count ?? 0;
-        }
-        return json(result);
-    } catch (e) {
-        const message = e instanceof Error ? e.message : String(e);
-        return json({ error: "server", message }, 500);
+    const { userId, token } = await request.json();
+    if (!(await recaptcha(token, env))) {
+        return json({ error: "recaptcha" }, 403);
     }
+    const result = await find(userId, env);
+    if (result && result.code === 0) {
+        await env.DB.prepare(
+            "INSERT INTO downloads (id, count) VALUES (?, 1) ON CONFLICT(id) DO UPDATE SET count = count + 1",
+        )
+            .bind(SERVERFINDER_COUNT_ID)
+            .run();
+        const row = await env.DB.prepare(
+            "SELECT count FROM downloads WHERE id = ?",
+        )
+            .bind(SERVERFINDER_COUNT_ID)
+            .first();
+        result.searchCount = row?.count ?? 0;
+    }
+    return json(result);
 }
 
 export default {
@@ -93,10 +88,9 @@ export default {
 
         return env.ASSETS.fetch(request);
     },
-    async queue(batch, env) {
-        for (const message of batch.messages) {
+    async scheduled(_event, env) {
+        try {
             await run(env);
-            message.ack();
-        }
+        } catch {}
     },
 };
