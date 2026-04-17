@@ -41,9 +41,9 @@ export default {
         const url = new URL(request.url);
         const path = url.pathname;
         const routes = {
-            "/api/counts": count,
-            "/api/track": track,
-            "/public/api/chime.json": chime,
+            "/public/counts": count,
+            "/public/track": track,
+            "/public/chime.json": chime,
         };
         const handler = routes[path];
         if (handler) {
