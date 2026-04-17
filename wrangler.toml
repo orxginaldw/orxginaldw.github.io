@@ -1,7 +1,6 @@
 name = "binwoken"
 main = "index.js"
 compatibility_date = "2026-04-01"
-compatibility_flags = [ "nodejs_compat" ]
 
 [[d1_databases]]
 binding = "DB"
@@ -15,6 +14,3 @@ bucket_name = "chime-matches"
 [assets]
 directory = "./assets"
 binding = "ASSETS"
-
-[triggers]
-crons = ["*/3 * * * *"]
