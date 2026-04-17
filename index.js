@@ -29,17 +29,6 @@ async function track(request, env) {
     return json({ id, count: row.count });
 }
 
-function find(request) {
-    return fetch("https://api.binwoken.sh/server", {
-        method: "POST",
-        headers: {
-            "content-type":
-                request.headers.get("content-type") || "application/json",
-        },
-        body: request.body,
-    });
-}
-
 async function chime(_request, env) {
     const obj = await env.CHIME_MATCHES.get("chime.json");
     return new Response(obj?.body, {
@@ -51,9 +40,6 @@ export default {
     async fetch(request, env) {
         const url = new URL(request.url);
         const path = url.pathname;
-        if (path === "/api/find" && request.method === "POST") {
-            return find(request);
-        }
         const routes = {
             "/api/counts": count,
             "/api/track": track,
