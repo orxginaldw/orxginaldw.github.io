@@ -30,7 +30,14 @@ async function track(request, env) {
 }
 
 async function chime(_request, env) {
-    const obj = await env.CHIME_MATCHES.get("chime.json");
+    const obj = await env.BINWOKEN.get("chime.json");
+    return new Response(obj?.body, {
+        headers: { "content-type": "application/json; charset=utf-8" },
+    });
+}
+
+async function members(_request, env) {
+    const obj = await env.BINWOKEN.get("members.json");
     return new Response(obj?.body, {
         headers: { "content-type": "application/json; charset=utf-8" },
     });
@@ -44,6 +51,7 @@ export default {
             "/public/counts": count,
             "/public/track": track,
             "/public/chime.json": chime,
+            "/public/members.json": members,
         };
         const handler = routes[path];
         if (handler) {

@@ -8,8 +8,8 @@ database_name = "binwoken"
 database_id = "31f18fcd-376a-4d79-a94c-6300aca38a61"
 
 [[r2_buckets]]
-binding = "CHIME_MATCHES"
-bucket_name = "chime-matches"
+binding = "BINWOKEN"
+bucket_name = "binwoken"
 
 [assets]
 directory = "./assets"
