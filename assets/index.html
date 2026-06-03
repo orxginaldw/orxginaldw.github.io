@@ -61,7 +61,7 @@
         </div>
         <div class="sf-captcha-meta">
           <p class="sf-captcha-legal">Protected by reCAPTCHA. Google <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy</a> and <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms</a> apply.</p>
-          <p id="sfSearchCount" class="sf-search-count">Users searched: 0</p>
+          <p id="sfSearchCount" class="sf-search-count">Users found: 0</p>
         </div>
       </div>
       <button type="button" class="btn sf-search" id="sfSearch" disabled>Search</button>
@@ -101,7 +101,7 @@
     const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     const ext=f=>f.type;
     const dlCountLabel=n=>{const x=n==null||n===""?0:Number(n);const v=Number.isFinite(x)?x:0;return v===1?"1 download":`${v} downloads`;};
-    const sfCountLabel=n=>{const x=n==null||n===""?0:Number(n);const v=Number.isFinite(x)?x:0;return `Users searched: ${v}`;};
+    const sfCountLabel=n=>{const x=n==null||n===""?0:Number(n);const v=Number.isFinite(x)?x:0;return `Users found: ${v}`;};
     const setSfCount=n=>{if(sfSearchCount)sfSearchCount.textContent=sfCountLabel(n);};
     let sfSearchDotsTimer=null;
     const clearSfSearchDots=()=>{if(sfSearchDotsTimer!=null){clearInterval(sfSearchDotsTimer);sfSearchDotsTimer=null;}};
