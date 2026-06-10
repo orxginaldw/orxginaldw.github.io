@@ -48,7 +48,7 @@
       <div class="kicker">Lookup</div>
       <div class="sf-title-row">
         <h2 id="sfTitle" class="m-title sf-title">Server Finder</h2>
-        <p class="sf-disclaimer">From 12 AM to 12 PM (UTC+00), search results may be inaccurate.</p>
+        <p id="sfDisclaimer" class="sf-disclaimer"></p>
       </div>
       <label class="sf-label" for="sfUserId">Roblox User ID</label>
       <input class="search sf-input" id="sfUserId" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -91,7 +91,7 @@
     ];
     const grid=document.getElementById("grid"),q=document.getElementById("q"),countNow=document.getElementById("countNow"),countAll=document.getElementById("countAll");
     const modal=document.getElementById("modal"),backdrop=document.getElementById("backdrop"),closeBtn=document.getElementById("close"),mTitle=document.getElementById("mTitle"),mMeta=document.getElementById("mMeta"),mDlCount=document.getElementById("mDlCount"),mDesc=document.getElementById("mDesc"),mPreviewWrap=document.getElementById("mPreviewWrap"),mPreview=document.getElementById("mPreview"),mDownload=document.getElementById("mDownload");
-    const serverFinderModal=document.getElementById("serverFinderModal"),serverFinderBackdrop=document.getElementById("serverFinderBackdrop"),serverFinderOpen=document.getElementById("serverFinderOpen"),serverFinderClose=document.getElementById("serverFinderClose"),sfUserId=document.getElementById("sfUserId"),sfSearch=document.getElementById("sfSearch"),sfResult=document.getElementById("sfResult"),sfCaptchaRow=document.getElementById("sfCaptchaRow"),sfCaptchaTrigger=document.getElementById("sfCaptchaTrigger"),sfSearchCount=document.getElementById("sfSearchCount");
+    const serverFinderModal=document.getElementById("serverFinderModal"),serverFinderBackdrop=document.getElementById("serverFinderBackdrop"),serverFinderOpen=document.getElementById("serverFinderOpen"),serverFinderClose=document.getElementById("serverFinderClose"),sfUserId=document.getElementById("sfUserId"),sfSearch=document.getElementById("sfSearch"),sfResult=document.getElementById("sfResult"),sfCaptchaRow=document.getElementById("sfCaptchaRow"),sfCaptchaTrigger=document.getElementById("sfCaptchaTrigger"),sfSearchCount=document.getElementById("sfSearchCount"),sfDisclaimer=document.getElementById("sfDisclaimer");
     let active=null,visibleList=files,countsMap={},sfCaptchaToken="";
     const setSearchEnabled=v=>{sfSearch.disabled=!v;};
     const resetCaptcha=()=>{sfCaptchaToken="";setSearchEnabled(false);if(sfCaptchaRow)sfCaptchaRow.classList.remove("sf-captcha-custom--verified");if(window.grecaptcha){try{grecaptcha.reset();}catch{}}};
@@ -103,6 +103,8 @@
     const dlCountLabel=n=>{const x=n==null||n===""?0:Number(n);const v=Number.isFinite(x)?x:0;return v===1?"1 download":`${v} downloads`;};
     const sfCountLabel=n=>{const x=n==null||n===""?0:Number(n);const v=Number.isFinite(x)?x:0;return `Total Users Found: ${v}`;};
     const setSfCount=n=>{if(sfSearchCount)sfSearchCount.textContent=sfCountLabel(n);};
+    const formatSfSync=iso=>{const d=new Date(iso);if(Number.isNaN(d.getTime()))return null;const s=Math.max(0,Math.floor((Date.now()-d.getTime())/1000));if(s<60)return "1m";const m=Math.floor(s/60);if(m<60)return `${m}m`;const h=Math.floor(m/60);if(h<48)return `${h}h`;return `${Math.floor(h/24)}d`;};
+    const loadSfDisclaimer=async()=>{if(!sfDisclaimer)return;try{const r=await fetch("https://api.binwoken.sh/servers.json");if(!r.ok)throw 0;const j=await r.json();const t=formatSfSync(j.servers_updated);sfDisclaimer.textContent=t?`Servers younger than ${t} won't be found.`:"Server update time unavailable.";}catch{sfDisclaimer.textContent="Server update time unavailable.";}};
     let sfSearchDotsTimer=null;
     const clearSfSearchDots=()=>{if(sfSearchDotsTimer!=null){clearInterval(sfSearchDotsTimer);sfSearchDotsTimer=null;}};
     const startSfSearchDots=()=>{clearSfSearchDots();let i=0;const frames=["Searching.","Searching..","Searching..."];sfResult.textContent=frames[0];sfSearchDotsTimer=setInterval(()=>{i=(i+1)%frames.length;sfResult.textContent=frames[i];},400);};
@@ -142,7 +144,7 @@
       dlAnchor(f.downloadUrl,f.downloadName);
     };
     const closeModal=()=>{active=null;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");};
-    const openServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.add("open");serverFinderModal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");sfResult.textContent="";resetCaptcha();sfUserId.focus();};
+    const openServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.add("open");serverFinderModal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");sfResult.textContent="";resetCaptcha();loadSfDisclaimer();sfUserId.focus();};
     const closeServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.remove("open");serverFinderModal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");};
     const callServerFinder=async()=>{if(sfSearch.disabled)return;const userId=sfUserId.value.trim();if(!userId){sfResult.textContent="Enter user ID.";return;}const token=sfCaptchaToken;if(!token){sfResult.textContent="Complete captcha.";resetCaptcha();return;}startSfSearchDots();setSearchEnabled(false);try{const r=await fetch("https://api.binwoken.sh/server",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId,token})});if(!r.ok){clearSfSearchDots();sfResult.textContent="Search failed.";resetCaptcha();return;}const j=await r.json();clearSfSearchDots();resetCaptcha();if(j&&j.code===0){const t=await fetch("/public/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:"serverfinder_searches"})});if(t.ok){const tj=await t.json();if(tj&&tj.count!=null)setSfCount(tj.count);}sfResult.textContent=`Server: ${j.serverName} | Realm: ${j.realmName}`;return;}sfResult.textContent="Not found.";}catch{clearSfSearchDots();resetCaptcha();sfResult.textContent="Search failed.";}}
     const openModal=f=>{active=f;mTitle.textContent=f.title;mMeta.textContent=`Created by ${f.creator} • Added ${f.added}`;if(f.trackId){const n=countsMap[f.trackId];mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(n);}else{mDlCount.hidden=true;}mDesc.innerHTML=(f.description||"").trim();if(f.previewImage){mPreview.src=f.previewImage;mPreviewWrap.hidden=false;}else{mPreviewWrap.hidden=true;mPreview.removeAttribute("src");}modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");};
@@ -161,6 +163,7 @@
     async function loadCounts(){try{const r=await fetch("/public/counts");if(r.ok)countsMap=await r.json();}catch{countsMap={}}setSfCount(countsMap.serverfinder_searches);render(visibleList);if(active&&active.trackId){mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(countsMap[active.trackId]);}}
     render(files);
     loadCounts();
+    loadSfDisclaimer();
   </script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>
