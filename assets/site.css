@@ -86,7 +86,7 @@ button.chip{cursor:pointer;appearance:none}
   line-height:1.45;
   color:#8a9ab8;
   text-align:right;
-  white-space:nowrap;
+  max-width:220px;
 }
 .sf-label{display:block;margin:0 0 8px;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.02em}
 .sf-input{margin-bottom:14px}
