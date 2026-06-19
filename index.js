@@ -29,8 +29,8 @@ async function track(request, env) {
     return json({ id, count: row.count });
 }
 
-async function chime(_request, env) {
-    const obj = await env.BINWOKEN.get("chime.json");
+async function matches(_request, env) {
+    const obj = await env.BINWOKEN.get("matches.json");
     return new Response(obj?.body, {
         headers: { "content-type": "application/json; charset=utf-8" },
     });
@@ -50,7 +50,7 @@ export default {
         const routes = {
             "/public/counts": count,
             "/public/track": track,
-            "/public/chime.json": chime,
+            "/public/matches.json": matches,
             "/public/members.json": members,
         };
         const handler = routes[path];

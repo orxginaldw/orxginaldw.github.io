@@ -7,58 +7,87 @@
   <link rel="stylesheet" href="site.css">
 </head>
 <body>
-  <div class="noise"></div>
+  <div class="bg-base" aria-hidden="true"></div>
+  <div class="bg-mesh" aria-hidden="true"></div>
+  <canvas id="bg-canvas" class="bg-canvas" aria-hidden="true"></canvas>
+  <div class="noise" aria-hidden="true"></div>
+
   <header class="bezel-header">
     <div class="notice rose">If you want your stuff posted here, join the Discord or DM.</div>
     <div class="notice amber">Support by joining the Discord.</div>
     <div class="head-row">
       <div class="brand">Binwoken</div>
-      <nav class="chips">
-        <button type="button" class="chip" id="serverFinderOpen">Server Finder</button>
-        <a class="chip" href="https://github.com/orxginaldw/orxginaldw.github.io/" target="_blank">GitHub</a>
-        <a class="chip" href="https://discord.gg/RzGnytNDRR" target="_blank">Discord</a>
+      <nav class="header-nav" aria-label="Site links">
+        <button type="button" class="nav-btn nav-btn--finder" id="serverFinderOpen">
+          <span class="nav-btn__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m21 21-4.34-4.34"/><circle cx="11" cy="11" r="8"/></svg>
+          </span>
+          <span class="nav-btn__label">Server Finder</span>
+        </button>
+        <span class="header-nav__sep" aria-hidden="true"></span>
+        <a class="nav-btn nav-btn--github" href="https://github.com/orxginaldw/orxginaldw.github.io/" target="_blank" rel="noreferrer">
+          <span class="nav-btn__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.477 2 2 6.59 2 12.26c0 4.52 2.87 8.35 6.84 9.7.5.1.68-.22.68-.49 0-.24-.01-.87-.01-1.7-2.78.62-3.37-1.37-3.37-1.37-.45-1.17-1.11-1.48-1.11-1.48-.91-.64.07-.63.07-.63 1 .07 1.53 1.05 1.53 1.05.9 1.56 2.36 1.11 2.94.85.09-.67.35-1.11.63-1.37-2.22-.26-4.56-1.14-4.56-5.07 0-1.12.39-2.03 1.03-2.75-.1-.26-.45-1.32.1-2.75 0 0 .84-.27 2.75 1.05A9.2 9.2 0 0 1 12 6.84c.85 0 1.71.12 2.51.34 1.91-1.32 2.75-1.05 2.75-1.05.55 1.43.2 2.49.1 2.75.64.72 1.03 1.63 1.03 2.75 0 3.94-2.34 4.81-4.57 5.07.36.32.68.94.68 1.9 0 1.37-.01 2.47-.01 2.81 0 .27.18.6.69.49A10.03 10.03 0 0 0 22 12.26C22 6.59 17.523 2 12 2Z"/></svg>
+          </span>
+          <span class="nav-btn__label">GitHub</span>
+        </a>
+        <span class="header-nav__sep" aria-hidden="true"></span>
+        <a class="nav-btn nav-btn--discord" href="https://discord.gg/RzGnytNDRR" target="_blank" rel="noreferrer">
+          <span class="nav-btn__icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M18.93 5.64A16.4 16.4 0 0 0 15.53 4c-.18.33-.39.77-.53 1.12a15.2 15.2 0 0 0-4 0C10.86 4.77 10.65 4.33 10.47 4a16.5 16.5 0 0 0-3.4 1.64C3.55 9.36 2.8 12.95 3.1 16.48a16.6 16.6 0 0 0 3.98 2.05c.32-.45.61-.93.86-1.43-1.54-.47-2.12-.72-2.12-.72.18-.13.36-.27.53-.41 4.08 1.9 8.5 1.9 12.55 0 .17.14.35.28.53.41 0 0-.59.25-2.13.72.25.5.54.98.86 1.43a16.5 16.5 0 0 0 4-2.05c.36-4.1-.62-7.66-2.57-10.84ZM9.25 13.77c-.97 0-1.77-.9-1.77-2.01 0-1.12.78-2.02 1.77-2.02 1 0 1.78.9 1.77 2.02 0 1.11-.78 2.01-1.77 2.01Zm5.5 0c-.97 0-1.77-.9-1.77-2.01 0-1.12.78-2.02 1.77-2.02 1 0 1.78.9 1.77 2.02 0 1.11-.77 2.01-1.77 2.01Z"/></svg>
+          </span>
+          <span class="nav-btn__label">Discord</span>
+        </a>
       </nav>
     </div>
   </header>
+
   <main class="page">
     <p class="count">Showing <b id="countNow">0</b> (of <b id="countAll">0</b> total) patches</p>
     <div class="toolbar">
-      <input class="search" id="q" type="text" placeholder="Search by title or creator">
+      <input class="search" id="q" type="text" placeholder="Search by title or creator" autocomplete="off" spellcheck="false">
     </div>
     <section id="grid" class="grid"></section>
   </main>
+
   <div id="modal" class="modal" aria-hidden="true">
     <div id="backdrop" class="backdrop"></div>
     <div class="panel" role="dialog" aria-modal="true" aria-labelledby="mTitle">
-      <button id="close" class="close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg></button>
+      <button id="close" class="close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
+      </button>
       <div class="kicker">Patch</div>
       <h2 id="mTitle" class="m-title"></h2>
       <p id="mMeta" class="m-meta"></p>
       <p id="mDlCount" class="m-dlcount" hidden></p>
-      <div id="mPreviewWrap" class="preview" hidden><div class="kicker">Preview</div><img id="mPreview" alt=""></div>
+      <div id="mPreviewWrap" class="preview" hidden>
+        <div class="kicker">Preview</div>
+        <img id="mPreview" alt="">
+      </div>
       <div class="kicker">Description</div>
       <p id="mDesc" class="desc"></p>
       <button id="mDownload" class="btn" type="button">Download</button>
     </div>
   </div>
+
   <div id="serverFinderModal" class="modal" aria-hidden="true">
     <div id="serverFinderBackdrop" class="backdrop"></div>
-    <div class="panel sf-panel" role="dialog" aria-modal="true" aria-labelledby="sfTitle">
-      <button id="serverFinderClose" class="close" type="button" aria-label="Close"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg></button>
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="sfTitle">
+      <button id="serverFinderClose" class="close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
+      </button>
       <div class="kicker">Lookup</div>
       <div class="sf-title-row">
-        <h2 id="sfTitle" class="m-title sf-title">Server Finder</h2>
+        <h2 id="sfTitle" class="m-title">Server Finder</h2>
         <p id="sfDisclaimer" class="sf-disclaimer"></p>
       </div>
       <label class="sf-label" for="sfUserId">Roblox User ID</label>
       <input class="search sf-input" id="sfUserId" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
       <div class="sf-captcha-wrap">
-        <div class="sf-captcha-custom" id="sfCaptchaRow">
-          <button type="button" id="sfCaptchaTrigger" class="sf-captcha-trigger g-recaptcha" aria-label="Verify you are not a robot" data-sitekey="6Ld2FrksAAAAAIMPagRQ4cpWlkpriNSBK2Ejv4ZC" data-size="invisible" data-badge="bottomright" data-callback="onCaptchaPass" data-expired-callback="onCaptchaReset" data-error-callback="onCaptchaError">
-            <span class="sf-captcha-box" aria-hidden="true"></span>
-            <span class="sf-captcha-label">I'm not a robot</span>
-          </button>
-        </div>
+        <button type="button" id="sfCaptchaTrigger" class="sf-captcha-trigger g-recaptcha" aria-label="Verify you are not a robot" data-sitekey="6Ld2FrksAAAAAIMPagRQ4cpWlkpriNSBK2Ejv4ZC" data-size="invisible" data-badge="bottomright" data-callback="onCaptchaPass" data-expired-callback="onCaptchaReset" data-error-callback="onCaptchaError">
+          <span class="sf-captcha-box" aria-hidden="true"></span>
+          <span class="sf-captcha-label">I'm not a robot</span>
+        </button>
         <div class="sf-captcha-meta">
           <p class="sf-captcha-legal">Protected by reCAPTCHA. Google <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy</a> and <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms</a> apply.</p>
           <p id="sfSearchCount" class="sf-search-count">Total Users Found: 0</p>
@@ -68,8 +97,10 @@
       <p id="sfResult" class="m-meta"></p>
     </div>
   </div>
+
   <script>
     const files=[
+      {trackId:"cage_macro",type:"ahk",title:"cage macro.ahk",creator:"wizzix",added:"Jun 19th, 2026",description:"AutoHotkey macro by wizzix, with vibecoded hold-M1, sprint M1, fast feint, roll parry, golden tongue, and parry bar macros.",downloadUrl:"https://raw.githubusercontent.com/orxginaldw/orxginaldw.github.io/refs/heads/main/downloads/cage%20macro.ahk",downloadName:"cage macro.ahk",previewImage:"images/cagemacro.png"},
       {trackId:"pistachio_cream_menu",type:"zip",title:"Pistachio Cream Menu",creator:"orxginaldw",added:"Apr 4th, 2026",description:"Modified version with the license check removed. In its current state most features barely work or are outright broken, the UI is the only reason its considered good.",downloadUrl:"https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/downloads/PCM_PATCH.zip",downloadName:"PCM_PATCH.zip",previewImage:"images/pistachiocreammenu.png"},
       {trackId:"pistachio_cream_menu_source",type:"zip",title:"Pistachio Cream Menu Source",creator:"orxginaldw",added:"Apr 4th, 2026",description:"Full Pistachio Cream Menu source code, untouched and unpatched.",downloadUrl:"https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/downloads/PCM_SOURCE.zip",downloadName:"PCM_SOURCE.zip",previewImage:"images/pistachiocreammenu.png"},
       {trackId:"lycoris_auto_parry_timings",type:"json",title:"Lycoris Auto-Parry Timings",creator:"orxginaldw",added:"Apr 3rd, 2026",description:"These are dumped auto-parry timings from <a href='https://github.com/Blastbrean/Lycoris-Rewrite/' target='_blank' rel='noreferrer'>Lycoris-Rewrite</a> via syncing workspace timing data and merging patch diffs into one timings file.",downloadUrl:"https://raw.githubusercontent.com/orxginaldw/orxginaldw.github.io/refs/heads/main/downloads/timings.json",downloadName:"timings.json"},
@@ -89,29 +120,30 @@
       {trackId:"evolution",type:"zip",title:"evolution.zip, Deprecated",creator:"orxginaldw",added:"Sep 18th, 2025",description:"AutoHotkey macro with a C++ ImGui backend that bundles public macros from popular YouTubers and Godseekers into one open-source menu. It also has OCR profile switching that auto-detects character slots for different build settings. This project is discontinued.",downloadUrl:"https://www.evolutionary.site/",downloadName:"",isLink:true,previewImage:"images/evolution.png"},
       {trackId:"astral",type:"zip",title:"astral_client.zip, Deprecated",creator:"orxginaldw",added:"Aug 11th, 2025",description:"Formerly known as Kintama Macro, now rebranded as Astral Client. It was known for a build stealer and a username-based server finder. The build stealer could capture pre-shrine and post-shrine stats, talents, and oath into a deepwoken.co/builder link, while the server finder could locate a target's server and luminant from the main menu. This project is discontinued.",downloadUrl:"https://astralclient.cc",downloadName:"",isLink:true,previewImage:"images/astralclient.png"}
     ];
+
     const grid=document.getElementById("grid"),q=document.getElementById("q"),countNow=document.getElementById("countNow"),countAll=document.getElementById("countAll");
     const modal=document.getElementById("modal"),backdrop=document.getElementById("backdrop"),closeBtn=document.getElementById("close"),mTitle=document.getElementById("mTitle"),mMeta=document.getElementById("mMeta"),mDlCount=document.getElementById("mDlCount"),mDesc=document.getElementById("mDesc"),mPreviewWrap=document.getElementById("mPreviewWrap"),mPreview=document.getElementById("mPreview"),mDownload=document.getElementById("mDownload");
-    const serverFinderModal=document.getElementById("serverFinderModal"),serverFinderBackdrop=document.getElementById("serverFinderBackdrop"),serverFinderOpen=document.getElementById("serverFinderOpen"),serverFinderClose=document.getElementById("serverFinderClose"),sfUserId=document.getElementById("sfUserId"),sfSearch=document.getElementById("sfSearch"),sfResult=document.getElementById("sfResult"),sfCaptchaRow=document.getElementById("sfCaptchaRow"),sfCaptchaTrigger=document.getElementById("sfCaptchaTrigger"),sfSearchCount=document.getElementById("sfSearchCount"),sfDisclaimer=document.getElementById("sfDisclaimer");
-    let active=null,visibleList=files,countsMap={},sfCaptchaToken="";
-    const setSearchEnabled=v=>{sfSearch.disabled=!v;};
-    const resetCaptcha=()=>{sfCaptchaToken="";setSearchEnabled(false);if(sfCaptchaRow)sfCaptchaRow.classList.remove("sf-captcha-custom--verified");if(window.grecaptcha){try{grecaptcha.reset();}catch{}}};
-    window.onCaptchaPass=token=>{sfCaptchaToken=String(token||"").trim();setSearchEnabled(!!sfCaptchaToken);if(sfCaptchaRow&&sfCaptchaToken)sfCaptchaRow.classList.add("sf-captcha-custom--verified");};
-    window.onCaptchaReset=()=>{sfCaptchaToken="";setSearchEnabled(false);if(sfCaptchaRow)sfCaptchaRow.classList.remove("sf-captcha-custom--verified");};
-    window.onCaptchaError=()=>{sfCaptchaToken="";setSearchEnabled(false);if(sfCaptchaRow)sfCaptchaRow.classList.remove("sf-captcha-custom--verified");};
+    const serverFinderModal=document.getElementById("serverFinderModal"),serverFinderBackdrop=document.getElementById("serverFinderBackdrop"),serverFinderOpen=document.getElementById("serverFinderOpen"),serverFinderClose=document.getElementById("serverFinderClose"),sfUserId=document.getElementById("sfUserId"),sfSearch=document.getElementById("sfSearch"),sfResult=document.getElementById("sfResult"),sfCaptchaTrigger=document.getElementById("sfCaptchaTrigger"),sfSearchCount=document.getElementById("sfSearchCount"),sfDisclaimer=document.getElementById("sfDisclaimer");
+    const sfCaptchaWrap=document.querySelector(".sf-captcha-wrap");
+
+    let active=null,visibleList=files,countsMap={},sfCaptchaToken="",sfSearchDotsTimer=null;
+
+    const setSearchEnabled=v=>{sfSearch.disabled=!v};
+    const resetCaptcha=()=>{sfCaptchaToken="";setSearchEnabled(false);sfCaptchaWrap.classList.remove("sf-captcha-custom--verified");if(window.grecaptcha){try{grecaptcha.reset()}catch{}}};
+    window.onCaptchaPass=t=>{sfCaptchaToken=String(t||"").trim();setSearchEnabled(!!sfCaptchaToken);if(sfCaptchaToken)sfCaptchaWrap.classList.add("sf-captcha-custom--verified")};
+    window.onCaptchaReset=window.onCaptchaError=()=>{sfCaptchaToken="";setSearchEnabled(false);sfCaptchaWrap.classList.remove("sf-captcha-custom--verified")};
     const esc=v=>String(v??"").replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
-    const ext=f=>f.type;
-    const dlCountLabel=n=>{const x=n==null||n===""?0:Number(n);const v=Number.isFinite(x)?x:0;return v===1?"1 download":`${v} downloads`;};
-    const sfCountLabel=n=>{const x=n==null||n===""?0:Number(n);const v=Number.isFinite(x)?x:0;return `Total Users Found: ${v}`;};
-    const setSfCount=n=>{if(sfSearchCount)sfSearchCount.textContent=sfCountLabel(n);};
-    const formatSfSync=iso=>{const d=new Date(iso);if(Number.isNaN(d.getTime()))return null;const s=Math.max(0,Math.floor((Date.now()-d.getTime())/1000));if(s<60)return "1m";const m=Math.floor(s/60);if(m<60)return `${m}m`;const h=Math.floor(m/60);if(h<48)return `${h}h`;return `${Math.floor(h/24)}d`;};
-    const loadSfDisclaimer=async()=>{if(!sfDisclaimer)return;try{const r=await fetch("https://api.binwoken.sh/servers.json");if(!r.ok)throw 0;const j=await r.json();const t=formatSfSync(j.servers_updated);sfDisclaimer.textContent=t?`Servers younger than ${t} won't be found.`:"Server update time unavailable.";}catch{sfDisclaimer.textContent="Server update time unavailable.";}};
-    let sfSearchDotsTimer=null;
-    const clearSfSearchDots=()=>{if(sfSearchDotsTimer!=null){clearInterval(sfSearchDotsTimer);sfSearchDotsTimer=null;}};
-    const startSfSearchDots=()=>{clearSfSearchDots();let i=0;const frames=["Searching.","Searching..","Searching..."];sfResult.textContent=frames[0];sfSearchDotsTimer=setInterval(()=>{i=(i+1)%frames.length;sfResult.textContent=frames[i];},400);};
-    const LS_TRACK="count";
-    const tracked=(()=>{try{const j=localStorage.getItem(LS_TRACK);const a=j?JSON.parse(j):[];return new Set(Array.isArray(a)?a:[]);}catch{return new Set();}})();
-    const saveTracked=()=>{try{localStorage.setItem(LS_TRACK,JSON.stringify([...tracked]));}catch{}};
-    const dlAnchor=(href,name)=>{const a=document.createElement("a");a.href=href;if(name)a.download=name;a.style.display="none";document.body.appendChild(a);a.click();a.remove();};
+    const dlCountLabel=n=>{const v=Number.isFinite(Number(n))?Number(n):0;return v===1?"1 download":`${v} downloads`};
+    const sfCountLabel=n=>`Total Users Found: ${Number.isFinite(Number(n))?Number(n):0}`;
+    const setSfCount=n=>{sfSearchCount.textContent=sfCountLabel(n)};
+    const formatSfSync=iso=>{const d=new Date(iso);if(Number.isNaN(d.getTime()))return null;const s=Math.max(0,Math.floor((Date.now()-d.getTime())/1000));if(s<60)return "1m";const m=Math.floor(s/60);if(m<60)return `${m}m`;const h=Math.floor(m/60);return h<48?`${h}h`:`${Math.floor(h/24)}d`};
+    const loadSfDisclaimer=async()=>{try{const r=await fetch("https://api.binwoken.sh/servers.json");if(!r.ok)throw 0;const t=formatSfSync((await r.json()).servers_updated);sfDisclaimer.textContent=t?`Servers younger than ${t} won't be found.`:"Server update time unavailable."}catch{sfDisclaimer.textContent="Server update time unavailable."}};
+    const clearSfSearchDots=()=>{if(sfSearchDotsTimer!=null){clearInterval(sfSearchDotsTimer);sfSearchDotsTimer=null}};
+    const startSfSearchDots=()=>{clearSfSearchDots();let i=0;const f=["Searching.","Searching..","Searching..."];sfResult.textContent=f[0];sfSearchDotsTimer=setInterval(()=>{sfResult.textContent=f[i=(i+1)%f.length]},400)};
+    const tracked=(()=>{try{const a=JSON.parse(localStorage.getItem("count")||"[]");return new Set(Array.isArray(a)?a:[])}catch{return new Set()}})();
+    const saveTracked=()=>{try{localStorage.setItem("count",JSON.stringify([...tracked]))}catch{}};
+    const dlAnchor=(href,name)=>{const a=document.createElement("a");a.href=href;if(name)a.download=name;a.style.display="none";document.body.appendChild(a);a.click();a.remove()};
+
     const dl=async f=>{
       if(f.trackId&&!tracked.has(f.trackId)){
         try{
@@ -121,20 +153,19 @@
             countsMap[f.trackId]=j.count;
             tracked.add(f.trackId);
             saveTracked();
-            if(active&&active.trackId===f.trackId){mDlCount.textContent=dlCountLabel(j.count);}
+            if(active?.trackId===f.trackId)mDlCount.textContent=dlCountLabel(j.count);
             render(visibleList);
           }
         }catch{}
       }
-      if(f.isLink){window.open(f.downloadUrl,"_blank");return;}
-      let useBlob=false;
-      try{useBlob=new URL(f.downloadUrl,location.origin).hostname==="raw.githubusercontent.com";}catch{}
-      if(useBlob){
+      if(f.isLink){window.open(f.downloadUrl,"_blank");return}
+      let blob=false;
+      try{blob=new URL(f.downloadUrl,location.origin).hostname==="raw.githubusercontent.com"}catch{}
+      if(blob){
         try{
           const r=await fetch(f.downloadUrl);
           if(r.ok){
-            const b=await r.blob();
-            const u=URL.createObjectURL(b);
+            const u=URL.createObjectURL(await r.blob());
             dlAnchor(u,f.downloadName||f.title.split(",")[0].trim());
             setTimeout(()=>URL.revokeObjectURL(u),1440);
             return;
@@ -143,27 +174,147 @@
       }
       dlAnchor(f.downloadUrl,f.downloadName);
     };
-    const closeModal=()=>{active=null;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");};
-    const openServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.add("open");serverFinderModal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");sfResult.textContent="";resetCaptcha();loadSfDisclaimer();sfUserId.focus();};
-    const closeServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.remove("open");serverFinderModal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open");};
-    const callServerFinder=async()=>{if(sfSearch.disabled)return;const userId=sfUserId.value.trim();if(!userId){sfResult.textContent="Enter user ID.";return;}const token=sfCaptchaToken;if(!token){sfResult.textContent="Complete captcha.";resetCaptcha();return;}startSfSearchDots();setSearchEnabled(false);try{const r=await fetch("https://api.binwoken.sh/server",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId,token})});if(!r.ok){clearSfSearchDots();sfResult.textContent="Search failed.";resetCaptcha();return;}const j=await r.json();clearSfSearchDots();resetCaptcha();if(j&&j.code===0){const t=await fetch("/public/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:"serverfinder_searches"})});if(t.ok){const tj=await t.json();if(tj&&tj.count!=null)setSfCount(tj.count);}sfResult.textContent=`Server: ${j.serverName} | Realm: ${j.realmName}`;return;}sfResult.textContent="Not found.";}catch{clearSfSearchDots();resetCaptcha();sfResult.textContent="Search failed.";}}
-    const openModal=f=>{active=f;mTitle.textContent=f.title;mMeta.textContent=`Created by ${f.creator} • Added ${f.added}`;if(f.trackId){const n=countsMap[f.trackId];mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(n);}else{mDlCount.hidden=true;}mDesc.innerHTML=(f.description||"").trim();if(f.previewImage){mPreview.src=f.previewImage;mPreviewWrap.hidden=false;}else{mPreviewWrap.hidden=true;mPreview.removeAttribute("src");}modal.classList.add("open");modal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");};
-    function render(list){visibleList=list;grid.innerHTML="";list.forEach(f=>{const c=document.createElement("article");c.className="card";const dc=f.trackId!=null?countsMap[f.trackId]:null;const dline=f.trackId!=null?`<p class="meta dl-line">${esc(dlCountLabel(dc))}</p>`:"";c.innerHTML=`<div class="kind">.${ext(f)}</div><h3 class="title">${esc(f.title)}</h3><p class="meta">by ${esc(f.creator)}</p><p class="meta">added ${esc(f.added)}</p>${dline}<button type="button" class="btn">Download</button>`;c.addEventListener("click",()=>openModal(f));c.querySelector(".btn").addEventListener("click",e=>{e.stopPropagation();dl(f);});grid.appendChild(c);});countNow.textContent=list.length;countAll.textContent=files.length;}
-    q.addEventListener("input",()=>{const s=q.value.trim().toLowerCase();render(!s?files:files.filter(f=>f.title.toLowerCase().includes(s)||f.creator.toLowerCase().includes(s)));});
-    mDownload.addEventListener("click",()=>{if(active)dl(active);});
-    backdrop.addEventListener("click",closeModal);
-    closeBtn.addEventListener("click",closeModal);
-    serverFinderOpen.addEventListener("click",openServerFinderModal);
-    serverFinderBackdrop.addEventListener("click",closeServerFinderModal);
-    serverFinderClose.addEventListener("click",closeServerFinderModal);
-    sfSearch.addEventListener("click",callServerFinder);
-    sfCaptchaTrigger.addEventListener("click",()=>{if(window.grecaptcha)return;});
-    sfUserId.addEventListener("keydown",e=>{if(e.key==="Enter")callServerFinder();});
-    document.addEventListener("keydown",e=>{if(e.key!=="Escape")return;if(serverFinderModal.classList.contains("open")){closeServerFinderModal();return;}if(modal.classList.contains("open"))closeModal();});
-    async function loadCounts(){try{const r=await fetch("/public/counts");if(r.ok)countsMap=await r.json();}catch{countsMap={}}setSfCount(countsMap.serverfinder_searches);render(visibleList);if(active&&active.trackId){mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(countsMap[active.trackId]);}}
+
+    const closeModal=()=>{active=null;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open")};
+    const openServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.add("open");serverFinderModal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");sfResult.textContent="";resetCaptcha();loadSfDisclaimer();sfUserId.focus()};
+    const closeServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.remove("open");serverFinderModal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open")};
+    const callServerFinder=async()=>{
+      if(sfSearch.disabled)return;
+      const userId=sfUserId.value.trim();
+      if(!userId){sfResult.textContent="Enter user ID.";return}
+      if(!sfCaptchaToken){sfResult.textContent="Complete captcha.";resetCaptcha();return}
+      startSfSearchDots();
+      setSearchEnabled(false);
+      try{
+        const r=await fetch("https://api.binwoken.sh/server",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({userId,token:sfCaptchaToken})});
+        if(!r.ok){clearSfSearchDots();sfResult.textContent="Search failed.";resetCaptcha();return}
+        const j=await r.json();
+        clearSfSearchDots();
+        resetCaptcha();
+        if(j?.code===0){
+          const t=await fetch("/public/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:"serverfinder_searches"})});
+          if(t.ok){const tj=await t.json();if(tj?.count!=null)setSfCount(tj.count)}
+          sfResult.textContent=`Server: ${j.serverName} | Realm: ${j.realmName}`;
+          return;
+        }
+        sfResult.textContent="Not found.";
+      }catch{
+        clearSfSearchDots();
+        resetCaptcha();
+        sfResult.textContent="Search failed.";
+      }
+    };
+    const openModal=f=>{
+      active=f;
+      mTitle.textContent=f.title;
+      mMeta.textContent=`Created by ${f.creator} • Added ${f.added}`;
+      if(f.trackId){mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(countsMap[f.trackId])}else mDlCount.hidden=true;
+      mDesc.innerHTML=(f.description||"").trim();
+      if(f.previewImage){mPreview.src=f.previewImage;mPreviewWrap.hidden=false}else{mPreviewWrap.hidden=true;mPreview.removeAttribute("src")}
+      modal.classList.add("open");
+      modal.setAttribute("aria-hidden","false");
+      document.body.classList.add("modal-open");
+    };
+
+    function render(list){
+      visibleList=list;
+      grid.innerHTML="";
+      list.forEach((f,i)=>{
+        const c=document.createElement("article");
+        c.className="card";
+        c.style.setProperty("--card-delay",Math.min(i*55,880)+"ms");
+        const d=f.trackId!=null?`<p class="meta dl-line">${esc(dlCountLabel(countsMap[f.trackId]))}</p>`:"";
+        c.innerHTML=`<div class="kind">.${f.type}</div><h3 class="title">${esc(f.title)}</h3><p class="meta">by ${esc(f.creator)}</p><p class="meta">added ${esc(f.added)}</p>${d}<button type="button" class="btn">Download</button>`;
+        c.onclick=()=>openModal(f);
+        c.querySelector(".btn").onclick=e=>{e.stopPropagation();dl(f)};
+        grid.appendChild(c);
+      });
+      countNow.textContent=list.length;
+      countAll.textContent=files.length;
+    }
+
+    q.oninput=()=>{const s=q.value.trim().toLowerCase();render(s?files.filter(f=>f.title.toLowerCase().includes(s)||f.creator.toLowerCase().includes(s)):files)};
+    mDownload.onclick=()=>{if(active)dl(active)};
+    backdrop.onclick=closeModal;
+    closeBtn.onclick=closeModal;
+    serverFinderOpen.onclick=openServerFinderModal;
+    serverFinderBackdrop.onclick=closeServerFinderModal;
+    serverFinderClose.onclick=closeServerFinderModal;
+    sfSearch.onclick=callServerFinder;
+    sfCaptchaTrigger.onclick=()=>{if(window.grecaptcha)return};
+    sfUserId.onkeydown=e=>{if(e.key==="Enter")callServerFinder()};
+    document.onkeydown=e=>{if(e.key!=="Escape")return;if(serverFinderModal.classList.contains("open"))closeServerFinderModal();else if(modal.classList.contains("open"))closeModal()};
+
+    async function loadCounts(){
+      try{const r=await fetch("/public/counts");if(r.ok)countsMap=await r.json()}catch{countsMap={}}
+      setSfCount(countsMap.serverfinder_searches);
+      render(visibleList);
+      if(active?.trackId){mDlCount.hidden=false;mDlCount.textContent=dlCountLabel(countsMap[active.trackId])}
+    }
+
+    document.querySelectorAll(".nav-btn").forEach(b=>{
+      b.onmousemove=e=>{
+        const r=b.getBoundingClientRect();
+        b.style.setProperty("--mx",((e.clientX-r.left)/r.width*100)+"%");
+        b.style.setProperty("--my",((e.clientY-r.top)/r.height*100)+"%");
+      };
+      b.onmouseleave=()=>{b.style.setProperty("--mx","50%");b.style.setProperty("--my","50%")};
+    });
+
     render(files);
     loadCounts();
     loadSfDisclaimer();
+  </script>
+  <script>
+    (function(){
+      const c=document.getElementById("bg-canvas");
+      if(!c||matchMedia("(prefers-reduced-motion: reduce)").matches)return;
+      const x=c.getContext("2d");
+      let p=[],m={x:0,y:0,a:0},w=0,h=0,d=1,L=112,P=148;
+      const sz=()=>{
+        w=innerWidth;h=innerHeight;
+        if(w<1||h<1){const b=c.getBoundingClientRect();w=b.width;h=b.height}
+        d=Math.min(devicePixelRatio||1,2);
+        c.width=Math.max(1,Math.floor(w*d));
+        c.height=Math.max(1,Math.floor(h*d));
+        c.style.width=w+"px";
+        c.style.height=h+"px";
+        x.setTransform(1,0,0,1,0,0);
+        x.scale(d,d);
+      };
+      const mk=()=>{
+        p=[];
+        for(let i=0,n=w<760?24:40;i<n;i++)p.push({x:Math.random()*w,y:Math.random()*h,vx:(Math.random()-.5)*.35,vy:(Math.random()-.5)*.35,r:Math.random()*1.2+.8});
+      };
+      const op=(a,b)=>Math.max(0,1-a/b);
+      const ln=()=>{
+        for(let i=0;i<p.length;i++)for(let j=i+1;j<p.length;j++){
+          const a=p[i],b=p[j],dist=Math.hypot(a.x-b.x,a.y-b.y);
+          if(dist>L)continue;
+          const f=op(dist,L);
+          x.beginPath();x.moveTo(a.x,a.y);x.lineTo(b.x,b.y);
+          x.strokeStyle=`rgba(96,165,250,${(f*.16).toFixed(3)})`;x.lineWidth=1;x.stroke();
+        }
+      };
+      const lp=()=>{
+        if(!m.a)return;
+        for(const a of p){
+          const dist=Math.hypot(m.x-a.x,m.y-a.y);
+          if(dist>P)continue;
+          const f=op(dist,P);
+          x.beginPath();x.moveTo(a.x,a.y);x.lineTo(m.x,m.y);
+          x.strokeStyle=`rgba(125,185,255,${(f*.42).toFixed(3)})`;x.lineWidth=1;x.stroke();
+        }
+      };
+      const dr=()=>{for(const a of p){x.beginPath();x.arc(a.x,a.y,a.r,0,Math.PI*2);x.fillStyle="rgba(148,185,255,.5)";x.fill()}};
+      const up=()=>{for(const a of p){a.x+=a.vx;a.y+=a.vy;if(a.x<0||a.x>w)a.vx*=-1;if(a.y<0||a.y>h)a.vy*=-1;a.x=Math.max(0,Math.min(w,a.x));a.y=Math.max(0,Math.min(h,a.y))}};
+      const frame=()=>{requestAnimationFrame(frame);if(document.hidden)return;x.save();x.setTransform(1,0,0,1,0,0);x.clearRect(0,0,c.width,c.height);x.restore();up();ln();lp();dr()};
+      const boot=()=>{sz();mk();frame()};
+      addEventListener("pointermove",e=>{m.x=e.clientX;m.y=e.clientY;m.a=1});
+      addEventListener("pointerleave",()=>{m.a=0});
+      addEventListener("resize",()=>{sz();mk()});
+      document.readyState==="complete"?boot():addEventListener("load",boot);
+    })();
   </script>
   <script src="https://www.google.com/recaptcha/api.js" async defer></script>
 </body>

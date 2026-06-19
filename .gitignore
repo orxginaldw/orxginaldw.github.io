@@ -1,5 +1,7 @@
 api.py
+bot.py
 chime.py
 parse.py
-members.py
+public.py
 roblox/
+__pycache__/
