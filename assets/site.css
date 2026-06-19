@@ -104,11 +104,11 @@ button.nav-btn{appearance:none;font:inherit}
 .sf-captcha-legal a{color:#a8c0e8;text-decoration:underline}
 .sf-search-count{white-space:nowrap;text-align:right}
 .grecaptcha-badge{visibility:hidden!important}
-.sf-search:disabled,.sf-search:disabled:hover{cursor:not-allowed;opacity:.55;filter:none;transform:none;border-color:#334563;background:linear-gradient(180deg,#2b3c5e,#223450)}
+.sf-search:disabled,#serverFinderModal .btn.sf-search:disabled,#serverFinderModal .btn.sf-search:disabled:hover{cursor:not-allowed;opacity:.55;filter:none;transform:none;border-color:#334563;background:linear-gradient(180deg,#2b3c5e,#223450);box-shadow:none}
 #serverFinderModal .btn{margin-top:0;position:static;overflow:visible;background:linear-gradient(180deg,#3b63ad,#2a4b86);transition:transform .22s cubic-bezier(.2,.8,.2,1),filter .22s,border-color .22s}
 #serverFinderModal .btn::before{display:none}
-#serverFinderModal .btn:hover{filter:brightness(1.08);transform:translateY(-1px);border-color:#5f84cb;box-shadow:none}
-#serverFinderModal .btn:active{transform:translateY(-1px)}
+#serverFinderModal .btn:hover:not(:disabled){filter:brightness(1.08);transform:translateY(-1px);border-color:#5f84cb;box-shadow:none}
+#serverFinderModal .btn:active:not(:disabled){transform:translateY(-1px)}
 #serverFinderModal .search{padding:11px 12px;font-size:14px}
 body.modal-open{overflow:hidden}
 @keyframes cardIn{to{opacity:1;transform:translateY(0)}}
