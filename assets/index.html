@@ -196,7 +196,7 @@
             const t=await fetch("/public/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:"serverfinder_searches"})});
             if(t.ok){const tj=await t.json();if(tj?.count!=null)setSfCount(tj.count)}
           }
-          sfResult.innerHTML=j.code===2?`Server: ${esc(j.serverName)} | Realm: ${esc(j.realmName)} | <span style="color:#f5a623;cursor:help" title="This server was picked from a random friend on the target's friend list. The target might not be here.">Friend Match</span>`:`Server: ${esc(j.serverName)} | Realm: ${esc(j.realmName)} | Target Match`;
+          sfResult.innerHTML=j.code===2?`Server: ${esc(j.serverName)} | Realm: ${esc(j.realmName)} | <span class="sf-friend" tabindex="0">Friend Match<span class="sf-tip" role="tooltip">This server was picked from a random friend on the target's friend list. The target might not be here.</span></span>`:`Server: ${esc(j.serverName)} | Realm: ${esc(j.realmName)} | Target Match`;
           return;
         }
         sfResult.textContent="Not found.";
