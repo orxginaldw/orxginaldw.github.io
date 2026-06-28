@@ -194,7 +194,7 @@
         if(j?.code===0||j?.code===2){
           const t=await fetch("/public/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:"serverfinder_searches"})});
           if(t.ok){const tj=await t.json();if(tj?.count!=null)setSfCount(tj.count)}
-          sfResult.textContent=j.code===2?`Server: ${j.serverName} | Realm: ${j.realmName} | Low Confidence`:`Server: ${j.serverName} | Realm: ${j.realmName} | High Confidence`;
+          sfResult.innerHTML=j.code===2?`Server: ${esc(j.serverName)} | Realm: ${esc(j.realmName)} | <span style="color:#f5a623">Friend Match</span>`:`Server: ${esc(j.serverName)} | Realm: ${esc(j.realmName)} | Target Match`;
           return;
         }
         sfResult.textContent="Not found.";
