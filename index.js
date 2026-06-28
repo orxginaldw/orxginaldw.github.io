@@ -29,20 +29,6 @@ async function track(request, env) {
     return json({ id, count: row.count });
 }
 
-async function matches(_request, env) {
-    const obj = await env.BINWOKEN.get("matches.json");
-    return new Response(obj?.body, {
-        headers: { "content-type": "application/json; charset=utf-8" },
-    });
-}
-
-async function members(_request, env) {
-    const obj = await env.BINWOKEN.get("members.json");
-    return new Response(obj?.body, {
-        headers: { "content-type": "application/json; charset=utf-8" },
-    });
-}
-
 export default {
     async fetch(request, env) {
         const url = new URL(request.url);
@@ -50,8 +36,6 @@ export default {
         const routes = {
             "/public/counts": count,
             "/public/track": track,
-            "/public/matches.json": matches,
-            "/public/members.json": members,
         };
         const handler = routes[path];
         if (handler) {
