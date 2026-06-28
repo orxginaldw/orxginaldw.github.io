@@ -137,7 +137,18 @@
     const sfCountLabel=n=>`Total Users Found: ${Number.isFinite(Number(n))?Number(n):0}`;
     const setSfCount=n=>{sfSearchCount.textContent=sfCountLabel(n)};
     const formatSfSync=iso=>{const d=new Date(iso);if(Number.isNaN(d.getTime()))return null;const s=Math.max(0,Math.floor((Date.now()-d.getTime())/1000));if(s<60)return "1m";const m=Math.floor(s/60);if(m<60)return `${m}m`;const h=Math.floor(m/60);return h<48?`${h}h`:`${Math.floor(h/24)}d`};
-    const loadSfDisclaimer=async()=>{try{const r=await fetch("https://api.binwoken.sh/servers.json");if(!r.ok)throw 0;const t=formatSfSync((await r.json()).servers_updated);sfDisclaimer.textContent=t?`Servers younger than ${t} won't be found.`:"Server update time unavailable."}catch{sfDisclaimer.textContent="Server update time unavailable."}};
+    const parseFbTime=s=>{const m=String(s).match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}).*\(([+-]\d{4})\)/);return m?new Date(`${m[1]}T${m[2]}${m[3].slice(0,3)}:${m[3].slice(3)}`).getTime():NaN};
+    const loadSfDisclaimer=async()=>{
+      const at=async(url,pick)=>{try{const r=await fetch(url,{signal:AbortSignal.timeout(3000)});if(!r.ok)throw 0;const d=pick(await r.json());return Number.isNaN(d)?null:d}catch{return null}};
+      const times=(await Promise.all([
+        at("https://api.binwoken.sh/servers.json",j=>new Date(j.servers_updated).getTime()),
+        at("https://api.yero.lol/deepwoken/servers.json",j=>new Date(j.updated_at).getTime()),
+        at("https://robloxbot-7e987-default-rtdb.europe-west1.firebasedatabase.app/.json",j=>parseFbTime(j.game_state.last_updated)),
+      ])).filter(v=>v!=null);
+      if(!times.length){sfDisclaimer.textContent="Server update time unavailable.";return}
+      const t=formatSfSync(new Date(Math.max(...times)).toISOString());
+      sfDisclaimer.textContent=t?`Servers younger than ${t} won't be found.`:"Server update time unavailable.";
+    };
     const clearSfSearchDots=()=>{if(sfSearchDotsTimer!=null){clearInterval(sfSearchDotsTimer);sfSearchDotsTimer=null}};
     const startSfSearchDots=()=>{clearSfSearchDots();let i=0;const f=["Searching.","Searching..","Searching..."];sfResult.textContent=f[0];sfSearchDotsTimer=setInterval(()=>{sfResult.textContent=f[i=(i+1)%f.length]},400)};
     const tracked=(()=>{try{const a=JSON.parse(localStorage.getItem("count")||"[]");return new Set(Array.isArray(a)?a:[])}catch{return new Set()}})();
