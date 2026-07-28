@@ -5,3 +5,7 @@ parse.py
 public.py
 roblox/
 __pycache__/
+cookies.json
+servers.json
+players.json
+deepwoken.json

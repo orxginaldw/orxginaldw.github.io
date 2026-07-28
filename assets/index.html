@@ -77,10 +77,7 @@
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
       </button>
       <div class="kicker">Lookup</div>
-      <div class="sf-title-row">
-        <h2 id="sfTitle" class="m-title">Server Finder</h2>
-        <p id="sfDisclaimer" class="sf-disclaimer"></p>
-      </div>
+      <h2 id="sfTitle" class="m-title">Server Finder</h2>
       <label class="sf-label" for="sfUserId">Roblox User ID</label>
       <input class="search sf-input" id="sfUserId" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
       <div class="sf-captcha-wrap">
@@ -125,7 +122,7 @@
 
     const grid=document.getElementById("grid"),q=document.getElementById("q"),countNow=document.getElementById("countNow"),countAll=document.getElementById("countAll");
     const modal=document.getElementById("modal"),backdrop=document.getElementById("backdrop"),closeBtn=document.getElementById("close"),mTitle=document.getElementById("mTitle"),mMeta=document.getElementById("mMeta"),mDlCount=document.getElementById("mDlCount"),mDesc=document.getElementById("mDesc"),mPreviewWrap=document.getElementById("mPreviewWrap"),mPreview=document.getElementById("mPreview"),mDownload=document.getElementById("mDownload");
-    const serverFinderModal=document.getElementById("serverFinderModal"),serverFinderBackdrop=document.getElementById("serverFinderBackdrop"),serverFinderOpen=document.getElementById("serverFinderOpen"),serverFinderClose=document.getElementById("serverFinderClose"),sfUserId=document.getElementById("sfUserId"),sfSearch=document.getElementById("sfSearch"),sfResult=document.getElementById("sfResult"),sfCaptchaTrigger=document.getElementById("sfCaptchaTrigger"),sfSearchCount=document.getElementById("sfSearchCount"),sfDisclaimer=document.getElementById("sfDisclaimer");
+    const serverFinderModal=document.getElementById("serverFinderModal"),serverFinderBackdrop=document.getElementById("serverFinderBackdrop"),serverFinderOpen=document.getElementById("serverFinderOpen"),serverFinderClose=document.getElementById("serverFinderClose"),sfUserId=document.getElementById("sfUserId"),sfSearch=document.getElementById("sfSearch"),sfResult=document.getElementById("sfResult"),sfCaptchaTrigger=document.getElementById("sfCaptchaTrigger"),sfSearchCount=document.getElementById("sfSearchCount");
     const sfCaptchaWrap=document.querySelector(".sf-captcha-wrap");
 
     let active=null,visibleList=files,countsMap={},sfCaptchaToken="",sfSearchDotsTimer=null;
@@ -138,19 +135,6 @@
     const dlCountLabel=n=>{const v=Number.isFinite(Number(n))?Number(n):0;return v===1?"1 download":`${v} downloads`};
     const sfCountLabel=n=>`Total Users Found: ${Number.isFinite(Number(n))?Number(n):0}`;
     const setSfCount=n=>{sfSearchCount.textContent=sfCountLabel(n)};
-    const formatSfSync=iso=>{const d=new Date(iso);if(Number.isNaN(d.getTime()))return null;const s=Math.max(0,Math.floor((Date.now()-d.getTime())/1000));if(s<60)return "1m";const m=Math.floor(s/60);if(m<60)return `${m}m`;const h=Math.floor(m/60);return h<48?`${h}h`:`${Math.floor(h/24)}d`};
-    const parseFbTime=s=>{const m=String(s).match(/(\d{4}-\d{2}-\d{2}) (\d{2}:\d{2}:\d{2}).*\(([+-]\d{4})\)/);return m?new Date(`${m[1]}T${m[2]}${m[3].slice(0,3)}:${m[3].slice(3)}`).getTime():NaN};
-    const loadSfDisclaimer=async()=>{
-      const at=async(url,pick)=>{try{const r=await fetch(url,{signal:AbortSignal.timeout(3000)});if(!r.ok)throw 0;const d=pick(await r.json());return Number.isNaN(d)?null:d}catch{return null}};
-      const times=(await Promise.all([
-        at("https://api.binwoken.sh/servers.json",j=>new Date(j.servers_updated).getTime()),
-        at("https://api.yero.lol/deepwoken/servers.json",j=>new Date(j.updated_at).getTime()),
-        at("https://robloxbot-7e987-default-rtdb.europe-west1.firebasedatabase.app/.json",j=>parseFbTime(j.game_state.last_updated)),
-      ])).filter(v=>v!=null);
-      if(!times.length){sfDisclaimer.textContent="Server update time unavailable.";return}
-      const t=formatSfSync(new Date(Math.max(...times)).toISOString());
-      sfDisclaimer.textContent=t?`Servers younger than ${t} won't be found.`:"Server update time unavailable.";
-    };
     const clearSfSearchDots=()=>{if(sfSearchDotsTimer!=null){clearInterval(sfSearchDotsTimer);sfSearchDotsTimer=null}};
     const startSfSearchDots=()=>{clearSfSearchDots();let i=0;const f=["Searching.","Searching..","Searching..."];sfResult.textContent=f[0];sfSearchDotsTimer=setInterval(()=>{sfResult.textContent=f[i=(i+1)%f.length]},400)};
     const tracked=(()=>{try{const a=JSON.parse(localStorage.getItem("count")||"[]");return new Set(Array.isArray(a)?a:[])}catch{return new Set()}})();
@@ -189,7 +173,7 @@
     };
 
     const closeModal=()=>{active=null;modal.classList.remove("open");modal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open")};
-    const openServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.add("open");serverFinderModal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");sfResult.textContent="";resetCaptcha();loadSfDisclaimer();sfUserId.focus()};
+    const openServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.add("open");serverFinderModal.setAttribute("aria-hidden","false");document.body.classList.add("modal-open");sfResult.textContent="";resetCaptcha();sfUserId.focus()};
     const closeServerFinderModal=()=>{clearSfSearchDots();serverFinderModal.classList.remove("open");serverFinderModal.setAttribute("aria-hidden","true");document.body.classList.remove("modal-open")};
     const callServerFinder=async()=>{
       if(sfSearch.disabled)return;
@@ -204,12 +188,10 @@
         const j=await r.json();
         clearSfSearchDots();
         resetCaptcha();
-        if(j?.code===0||j?.code===2){
-          if(j.code===0){
-            const t=await fetch("/public/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:"serverfinder_searches"})});
-            if(t.ok){const tj=await t.json();if(tj?.count!=null)setSfCount(tj.count)}
-          }
-          sfResult.innerHTML=j.code===2?`Server: ${esc(j.serverName)} | Realm: ${esc(j.realmName)} | <span class="sf-friend" tabindex="0">Low Confidence<svg class="sf-friend__icon" xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"/><path d="M12 9v4"/><path d="M12 17h.01"/></svg><span class="sf-tip" role="tooltip">This server was picked from a random friend on the target's friend list. The target might not be here.</span></span>`:`Server: ${esc(j.serverName)} | Realm: ${esc(j.realmName)}`;
+        if(j?.code===0){
+          const t=await fetch("/public/track",{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({id:"serverfinder_searches"})});
+          if(t.ok){const tj=await t.json();if(tj?.count!=null)setSfCount(tj.count)}
+          sfResult.textContent=`Server: ${j.serverName} | Realm: ${j.realmName}`;
           return;
         }
         sfResult.textContent="Not found.";
@@ -278,7 +260,6 @@
 
     render(files);
     loadCounts();
-    loadSfDisclaimer();
   </script>
   <script>
     (function(){
