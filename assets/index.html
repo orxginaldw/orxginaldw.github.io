@@ -324,7 +324,6 @@
       document.body.classList.add("modal-open");
       serverFinderResult.textContent = "";
       resetCaptcha();
-      loadServerFinderDisclaimer();
       serverFinderUserId.focus();
     };
 
@@ -488,6 +487,7 @@
 
     render(files);
     loadCounts();
+    loadServerFinderDisclaimer();
   </script>
   <script>
     (function () {
