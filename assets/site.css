@@ -86,6 +86,8 @@ button.nav-btn{appearance:none;font:inherit}
 .preview img{display:block;width:100%;max-height:48vh;object-fit:contain;border:1px solid var(--line);border-radius:12px;background:#0b0f19}
 .desc{margin:0 0 12px;color:#d3ddf5;white-space:pre-wrap;line-height:1.58;padding:10px 11px;border:1px solid rgba(76,94,130,.62);border-radius:10px;background:rgba(9,13,22,.78)}
 .desc a,.desc a:visited{color:#8db7ff;text-decoration:underline;text-underline-offset:2px}
+.sf-title-row{margin:0 40px 8px 0;display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.sf-disclaimer{position:absolute;top:74px;right:28px;margin:0;font-size:10px;line-height:1.45;color:#8a9ab8;text-align:right;white-space:nowrap}
 .sf-label{display:block;margin:0 0 8px;color:var(--muted);font-size:12px;font-weight:600;letter-spacing:.02em}
 .sf-input{margin-bottom:14px}
 .sf-search{width:100%}
