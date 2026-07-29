@@ -488,6 +488,10 @@
     render(files);
     loadCounts();
     loadServerFinderDisclaimer();
+    [...new Set(files.map((file) => file.previewImage).filter(Boolean))].forEach((src) => {
+      const image = new Image();
+      image.src = src;
+    });
   </script>
   <script>
     (function () {
