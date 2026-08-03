@@ -47,6 +47,7 @@
           </button>
           <div class="profile-dropdown" id="profile-dropdown">
             <button type="button" class="profile-dropdown__item" id="profile-login">Log in</button>
+            <button type="button" class="profile-dropdown__item" id="profile-premium" hidden>Buy premium</button>
             <button type="button" class="profile-dropdown__item" id="profile-logout" hidden>Log out</button>
           </div>
         </div>
@@ -468,6 +469,7 @@
     const profileDropdown = document.getElementById("profile-dropdown");
     const profileMenu = profileOpen.closest(".profile-menu");
     const profileLogin = document.getElementById("profile-login");
+    const profilePremium = document.getElementById("profile-premium");
     const profileLogout = document.getElementById("profile-logout");
     const profileIcon = document.getElementById("profile-icon");
     const profileIconSvg = profileIcon.innerHTML;
@@ -492,12 +494,14 @@
     const setLoggedOut = () => {
       clearCookie("discord_token");
       profileLogin.hidden = false;
+      profilePremium.hidden = true;
       profileLogout.hidden = true;
       profileIcon.innerHTML = profileIconSvg;
       profileIcon.classList.remove("nav-btn__icon--avatar");
     };
     const setLoggedIn = (user) => {
       profileLogin.hidden = true;
+      profilePremium.hidden = false;
       profileLogout.hidden = false;
       profileIcon.classList.add("nav-btn__icon--avatar");
       profileIcon.innerHTML = "<img src=\"" + discordAvatarUrl(user) + "\" alt=\"\">";
