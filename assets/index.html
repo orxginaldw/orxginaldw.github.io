@@ -41,12 +41,13 @@
         <span class="header-nav__sep" aria-hidden="true"></span>
         <div class="profile-menu">
           <button type="button" class="nav-btn nav-btn--profile" id="profile-open" aria-label="Profile" aria-expanded="false" aria-controls="profile-dropdown">
-            <span class="nav-btn__icon" aria-hidden="true">
+            <span class="nav-btn__icon" id="profile-icon" aria-hidden="true">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17.925 20.056a6 6 0 0 0-11.851.001"/><circle cx="12" cy="11" r="4"/><circle cx="12" cy="12" r="10"/></svg>
             </span>
           </button>
           <div class="profile-dropdown" id="profile-dropdown">
             <button type="button" class="profile-dropdown__item" id="profile-login">Log in</button>
+            <button type="button" class="profile-dropdown__item" id="profile-logout" hidden>Log out</button>
           </div>
         </div>
       </nav>
@@ -466,17 +467,68 @@
     const profileOpen = document.getElementById("profile-open");
     const profileDropdown = document.getElementById("profile-dropdown");
     const profileMenu = profileOpen.closest(".profile-menu");
+    const profileLogin = document.getElementById("profile-login");
+    const profileLogout = document.getElementById("profile-logout");
+    const profileIcon = document.getElementById("profile-icon");
+    const profileIconSvg = profileIcon.innerHTML;
+    const getCookie = (name) => {
+      const match = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)"));
+      return match ? decodeURIComponent(match[1]) : null;
+    };
+    const setCookie = (name, value) => {
+      document.cookie = name + "=" + encodeURIComponent(value) + "; Path=/; Secure; SameSite=Lax; Max-Age=604800";
+    };
+    const clearCookie = (name) => {
+      document.cookie = name + "=; Path=/; Secure; SameSite=Lax; Max-Age=0";
+    };
+    const discordAvatarUrl = (user) => {
+      if (user.avatar) return "https://cdn.discordapp.com/avatars/" + user.id + "/" + user.avatar + ".png?size=64";
+      return "https://cdn.discordapp.com/embed/avatars/" + (Number(BigInt(user.id) >> 22n) % 6) + ".png";
+    };
     const closeProfileDropdown = () => {
       profileDropdown.classList.remove("open");
       profileOpen.setAttribute("aria-expanded", "false");
+    };
+    const setLoggedOut = () => {
+      clearCookie("discord_token");
+      profileLogin.hidden = false;
+      profileLogout.hidden = true;
+      profileIcon.innerHTML = profileIconSvg;
+      profileIcon.classList.remove("nav-btn__icon--avatar");
+    };
+    const setLoggedIn = (user) => {
+      profileLogin.hidden = true;
+      profileLogout.hidden = false;
+      profileIcon.classList.add("nav-btn__icon--avatar");
+      profileIcon.innerHTML = "<img src=\"" + discordAvatarUrl(user) + "\" alt=\"\">";
+    };
+    const validateDiscordToken = () => {
+      const token = getCookie("discord_token");
+      if (!token) {
+        setLoggedOut();
+        return;
+      }
+      fetch("https://discord.com/api/users/@me", {
+        headers: { Authorization: "Bearer " + token },
+      }).then((response) => {
+        if (!response.ok) {
+          setLoggedOut();
+          return;
+        }
+        return response.json().then((user) => setLoggedIn(user));
+      }).catch(() => setLoggedOut());
     };
     profileOpen.onclick = () => {
       const open = !profileDropdown.classList.contains("open");
       profileDropdown.classList.toggle("open", open);
       profileOpen.setAttribute("aria-expanded", open ? "true" : "false");
     };
-    document.getElementById("profile-login").onclick = () => {
+    profileLogin.onclick = () => {
       location.href = "/auth/login";
+    };
+    profileLogout.onclick = () => {
+      setLoggedOut();
+      closeProfileDropdown();
     };
     document.addEventListener("click", (event) => {
       if (!profileMenu.contains(event.target)) closeProfileDropdown();
@@ -484,6 +536,7 @@
     window.addEventListener("scroll", closeProfileDropdown, { passive: true });
     document.addEventListener("wheel", closeProfileDropdown, { passive: true });
     document.addEventListener("touchmove", closeProfileDropdown, { passive: true });
+    validateDiscordToken();
 
     document.onkeydown = (event) => {
       if (event.key !== "Escape") return;
