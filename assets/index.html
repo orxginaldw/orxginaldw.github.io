@@ -378,17 +378,23 @@
         resetCaptcha();
         return;
       }
+      const discord = getCookie("discord_token");
+      if (!discord) {
+        serverFinderResult.textContent = "Log in to search.";
+        return;
+      }
       startSearchDots();
       setSearchEnabled(false);
       try {
         const response = await fetch("https://api.binwoken.sh/server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, token: serverFinderCaptchaToken }),
+          body: JSON.stringify({ userId, token: serverFinderCaptchaToken, discord }),
         });
         if (!response.ok) {
           clearSearchDots();
-          serverFinderResult.textContent = "Search failed.";
+          const err = await response.json().catch(() => ({}));
+          serverFinderResult.textContent = err?.error === "premium" ? "Premium only." : err?.error === "recaptcha" ? "Complete captcha." : "Search failed.";
           resetCaptcha();
           return;
         }
