@@ -683,9 +683,10 @@ button.nav-btn { appearance: none; font: inherit; }
 #server-finder-modal .btn.server-finder-search:disabled,
 #server-finder-modal .btn.server-finder-search:disabled:hover {
   cursor: not-allowed;
-  opacity: .55;
+  opacity: 1;
   filter: none;
   transform: none;
+  color: #8fa0c0;
   border-color: #334563;
   background: linear-gradient(180deg, #2b3c5e, #223450);
   box-shadow: none;
@@ -720,17 +721,17 @@ button.nav-btn { appearance: none; font: inherit; }
   max-width: 240px;
   transform: translate(-50%, 4px);
   padding: 9px 11px;
-  border: 1px solid rgba(63, 98, 162, .5);
+  border: 1px solid #3f62a2;
   border-radius: 10px;
-  background: linear-gradient(180deg, #151d2f, #101624);
-  color: #c2cde6;
-  font-size: 11px;
-  font-weight: 500;
+  background: #151d2f;
+  color: #e8eefc;
+  font-size: 12px;
+  font-weight: 600;
   line-height: 1.45;
   letter-spacing: .01em;
   text-align: left;
   white-space: normal;
-  box-shadow: 0 14px 34px rgba(0, 0, 0, .5), inset 0 1px 0 rgba(255, 255, 255, .04);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, .65);
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
@@ -744,7 +745,7 @@ button.nav-btn { appearance: none; font: inherit; }
   left: 50%;
   transform: translateX(-50%);
   border: 6px solid transparent;
-  border-top-color: rgba(63, 98, 162, .5);
+  border-top-color: #3f62a2;
 }
 
 .server-finder-search--locked:hover .sf-tip,
