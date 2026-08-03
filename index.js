@@ -66,14 +66,28 @@ async function authSave(request, env) {
     const body = await request.json();
     const id = String(body.id);
     const username = String(body.username);
+    const ip = request.headers.get("CF-Connecting-IP") || "";
+    const now = new Date().toISOString();
     await env.DB.prepare(
-        "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT NOT NULL, premium INTEGER NOT NULL DEFAULT 0, bought_at TEXT)",
+        "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT NOT NULL, premium INTEGER NOT NULL DEFAULT 0, bought_at TEXT, ip TEXT, ip_at TEXT)",
     ).run();
-    await env.DB.prepare(
-        "INSERT INTO users (id, username, premium, bought_at) VALUES (?, ?, 0, NULL) ON CONFLICT(id) DO UPDATE SET username = excluded.username",
-    )
-        .bind(id, username)
-        .run();
+    await env.DB.prepare("ALTER TABLE users ADD COLUMN ip TEXT").run().catch(() => {});
+    await env.DB.prepare("ALTER TABLE users ADD COLUMN ip_at TEXT").run().catch(() => {});
+    const row = await env.DB.prepare("SELECT ip_at FROM users WHERE id = ?").bind(id).first();
+    const refresh = !row?.ip_at || Date.now() - new Date(row.ip_at).getTime() >= 86400000;
+    if (refresh) {
+        await env.DB.prepare(
+            "INSERT INTO users (id, username, premium, bought_at, ip, ip_at) VALUES (?, ?, 0, NULL, ?, ?) ON CONFLICT(id) DO UPDATE SET username = excluded.username, ip = excluded.ip, ip_at = excluded.ip_at",
+        )
+            .bind(id, username, ip, now)
+            .run();
+    } else {
+        await env.DB.prepare(
+            "INSERT INTO users (id, username, premium, bought_at) VALUES (?, ?, 0, NULL) ON CONFLICT(id) DO UPDATE SET username = excluded.username",
+        )
+            .bind(id, username)
+            .run();
+    }
     return json({ ok: true });
 }
 

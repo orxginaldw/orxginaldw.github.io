@@ -515,7 +515,14 @@
           setLoggedOut();
           return;
         }
-        return response.json().then((user) => setLoggedIn(user));
+        return response.json().then((user) => {
+          setLoggedIn(user);
+          fetch("/auth/save", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: user.id, username: user.username }),
+          });
+        });
       }).catch(() => setLoggedOut());
     };
     profileOpen.onclick = () => {
