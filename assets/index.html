@@ -227,7 +227,7 @@
         const response = await fetch("https://api.binwoken.sh/server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ date: true }),
+          body: JSON.stringify({ age: true }),
           signal: AbortSignal.timeout(3000),
         });
         if (!response.ok) throw 0;
