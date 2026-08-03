@@ -106,7 +106,15 @@
           <p id="server-finder-search-count" class="server-finder-search-count">Total Users Found: 0</p>
         </div>
       </div>
-      <button type="button" class="btn server-finder-search" id="server-finder-search" disabled>Search</button>
+      <button type="button" class="btn server-finder-search" id="server-finder-search" disabled>
+        <span class="server-finder-search__row">
+          <span class="server-finder-search__label">Search</span>
+          <span class="server-finder-lock" id="server-finder-lock" hidden>
+            <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <span class="sf-tip" role="tooltip">premium only</span>
+          </span>
+        </span>
+      </button>
       <p id="server-finder-result" class="modal-meta"></p>
     </div>
   </div>
@@ -167,8 +175,19 @@
     let countsMap = {};
     let serverFinderCaptchaToken = "";
     let searchDotsTimer = null;
+    let isPremium = false;
+    let discordUser = null;
+    const serverFinderLock = document.getElementById("server-finder-lock");
 
     const setSearchEnabled = (enabled) => {
+      if (!isPremium) {
+        serverFinderSearch.disabled = true;
+        serverFinderSearch.classList.add("server-finder-search--locked");
+        serverFinderLock.hidden = false;
+        return;
+      }
+      serverFinderSearch.classList.remove("server-finder-search--locked");
+      serverFinderLock.hidden = true;
       serverFinderSearch.disabled = !enabled;
     };
 
@@ -348,7 +367,7 @@
     };
 
     const searchServerFinder = async () => {
-      if (serverFinderSearch.disabled) return;
+      if (!isPremium || serverFinderSearch.disabled) return;
       const userId = serverFinderUserId.value.trim();
       if (!userId) {
         serverFinderResult.textContent = "Enter user ID.";
@@ -493,18 +512,36 @@
     };
     const setLoggedOut = () => {
       clearCookie("discord_token");
+      discordUser = null;
+      isPremium = false;
       profileLogin.hidden = false;
       profilePremium.hidden = true;
       profileLogout.hidden = true;
       profileIcon.innerHTML = profileIconSvg;
       profileIcon.classList.remove("nav-btn__icon--avatar");
+      setSearchEnabled(false);
     };
     const setLoggedIn = (user) => {
+      discordUser = user;
       profileLogin.hidden = true;
-      profilePremium.hidden = false;
+      profilePremium.hidden = !!isPremium;
       profileLogout.hidden = false;
       profileIcon.classList.add("nav-btn__icon--avatar");
       profileIcon.innerHTML = "<img src=\"" + discordAvatarUrl(user) + "\" alt=\"\">";
+      setSearchEnabled(!!serverFinderCaptchaToken);
+    };
+    const loadPremium = (user) => {
+      return fetch("/auth/me", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: user.id }),
+      })
+        .then((response) => response.json())
+        .then((data) => {
+          isPremium = !!data.premium;
+          profilePremium.hidden = isPremium;
+          setSearchEnabled(!!serverFinderCaptchaToken);
+        });
     };
     const validateDiscordToken = () => {
       const token = getCookie("discord_token");
@@ -525,7 +562,7 @@
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ id: user.id, username: user.username }),
-          });
+          }).then(() => loadPremium(user));
         });
       }).catch(() => setLoggedOut());
     };
@@ -537,6 +574,14 @@
     profileLogin.onclick = () => {
       location.href = "/auth/login";
     };
+    profilePremium.onclick = () => {
+      fetch("/stripe/checkout", { method: "POST" })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.url) location.href = data.url;
+        });
+      closeProfileDropdown();
+    };
     profileLogout.onclick = () => {
       setLoggedOut();
       closeProfileDropdown();
@@ -547,6 +592,7 @@
     window.addEventListener("scroll", closeProfileDropdown, { passive: true });
     document.addEventListener("wheel", closeProfileDropdown, { passive: true });
     document.addEventListener("touchmove", closeProfileDropdown, { passive: true });
+    setSearchEnabled(false);
     validateDiscordToken();
 
     document.onkeydown = (event) => {
