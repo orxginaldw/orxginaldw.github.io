@@ -77,25 +77,17 @@ async function authSave(request, env) {
     const body = await request.json();
     const id = String(body.id);
     const username = String(body.username);
-    const ip = request.headers.get("CF-Connecting-IP") || "";
-    const now = new Date().toISOString();
     await ensureUsers(env);
-    const row = await env.DB.prepare("SELECT ip_at FROM users WHERE id = ?").bind(id).first();
-    const refresh = !row?.ip_at || Date.now() - new Date(row.ip_at).getTime() >= 86400000;
-    if (refresh) {
-        await env.DB.prepare(
-            "INSERT INTO users (id, username, premium, bought_at, ip, ip_at) VALUES (?, ?, 0, NULL, ?, ?) ON CONFLICT(id) DO UPDATE SET username = excluded.username, ip = excluded.ip, ip_at = excluded.ip_at",
-        )
-            .bind(id, username, ip, now)
-            .run();
-    } else {
-        await env.DB.prepare(
-            "INSERT INTO users (id, username, premium, bought_at) VALUES (?, ?, 0, NULL) ON CONFLICT(id) DO UPDATE SET username = excluded.username",
-        )
-            .bind(id, username)
-            .run();
-    }
+    await env.DB.prepare(
+        "INSERT INTO users (id, username, premium, bought_at) VALUES (?, ?, 0, NULL) ON CONFLICT(id) DO UPDATE SET username = excluded.username",
+    )
+        .bind(id, username)
+        .run();
     return json({ ok: true });
+}
+
+async function authIp(request) {
+    return json({ ip: request.headers.get("CF-Connecting-IP") || "" });
 }
 
 async function authMe(request, env) {
@@ -241,6 +233,7 @@ export default {
         if (path === "/auth" && request.method === "GET") return authPage();
         if (path === "/auth/save" && request.method === "POST") return authSave(request, env);
         if (path === "/auth/me" && request.method === "POST") return authMe(request, env);
+        if (path === "/auth/ip" && request.method === "GET") return authIp(request);
         if (path === "/stripe/checkout" && request.method === "POST") return stripeCheckout(request, env);
         if (path === "/stripe/webhook" && request.method === "POST") return stripeWebhook(request, env);
         const routes = {

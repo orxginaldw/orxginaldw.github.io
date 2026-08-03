@@ -386,15 +386,16 @@
       startSearchDots();
       setSearchEnabled(false);
       try {
+        const ip = await fetch("/auth/ip").then((r) => r.json()).then((d) => d.ip || "");
         const response = await fetch("https://api.binwoken.sh/server", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ userId, token: serverFinderCaptchaToken, discord }),
+          body: JSON.stringify({ userId, token: serverFinderCaptchaToken, discord, ip }),
         });
         if (!response.ok) {
           clearSearchDots();
           const err = await response.json().catch(() => ({}));
-          serverFinderResult.textContent = err?.error === "premium" ? "Premium only." : err?.error === "recaptcha" ? "Complete captcha." : "Search failed.";
+          serverFinderResult.textContent = err?.error === "premium" ? "Premium only." : err?.error === "unauthorized" ? "Unauthorized." : err?.error === "recaptcha" ? "Complete captcha." : "Search failed.";
           resetCaptcha();
           return;
         }
