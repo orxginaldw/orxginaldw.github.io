@@ -300,6 +300,10 @@ button.nav-btn { appearance: none; font: inherit; }
   transition: color .2s, background-color .2s, border-color .2s;
 }
 
+.profile-dropdown__item[hidden] {
+  display: none;
+}
+
 .profile-dropdown__item:hover {
   color: #fff;
   border-color: rgba(96, 165, 250, .35);
