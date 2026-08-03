@@ -230,6 +230,67 @@ button.nav-btn { appearance: none; font: inherit; }
 .nav-btn--discord { --nav-accent: #7289da; }
 .nav-btn--discord:hover { border-color: rgba(114, 137, 218, .5); background: rgba(88, 101, 242, .14); }
 
+.nav-btn--profile {
+  --nav-accent: #94a3b8;
+  padding: 8px 10px;
+}
+
+.nav-btn--profile:hover {
+  border-color: rgba(148, 163, 184, .4);
+  background: rgba(148, 163, 184, .1);
+}
+
+.profile-menu {
+  position: relative;
+  flex: 0 0 auto;
+}
+
+.profile-dropdown {
+  position: absolute;
+  top: calc(100% + 12px);
+  right: 0;
+  z-index: 40;
+  min-width: 132px;
+  padding: 5px;
+  border-radius: 12px;
+  border: 1px solid rgba(52, 66, 94, .75);
+  background: linear-gradient(180deg, rgba(20, 28, 45, .98), rgba(12, 17, 29, .96));
+  box-shadow: 0 14px 32px rgba(0, 0, 0, .45);
+  opacity: 1;
+  visibility: hidden;
+  pointer-events: none;
+  clip-path: inset(0 0 100% 0);
+  transition: clip-path .14s var(--ease-out), visibility .14s;
+}
+
+.profile-dropdown.open {
+  visibility: visible;
+  pointer-events: auto;
+  clip-path: inset(0 0 0 0);
+}
+
+.profile-dropdown__item {
+  display: block;
+  width: 100%;
+  margin: 0;
+  padding: 9px 12px;
+  border: 1px solid transparent;
+  border-radius: 8px;
+  background: transparent;
+  color: #c2cde6;
+  font: 600 12px/1 var(--font);
+  text-align: left;
+  cursor: pointer;
+  appearance: none;
+  transition: color .2s, background-color .2s, border-color .2s;
+}
+
+.profile-dropdown__item:hover {
+  color: #fff;
+  border-color: rgba(96, 165, 250, .35);
+  background: rgba(96, 165, 250, .12);
+}
+
 .page {
   position: relative;
   z-index: 1;
@@ -650,6 +711,8 @@ body.modal-open { overflow: hidden; }
   .header-nav__sep { display: none; }
   .nav-btn { flex: 1 1 calc(50% - 4px); justify-content: center; min-width: 0; }
   .nav-btn--finder { flex: 1 1 100%; }
+  .profile-menu { flex: 0 0 auto; }
+  .nav-btn--profile { flex: 0 0 auto; }
 }
 
 @media (prefers-reduced-motion: reduce) {
