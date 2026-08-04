@@ -99,6 +99,18 @@ export async function dashboardGet(request, env) {
     });
 }
 
+export async function dashboardRemove(request, env) {
+    const gate = await premiumUser(request, env);
+    if (gate.error) return gate.error;
+    const { userId } = await request.json();
+    const id = String(userId || "").trim();
+    const watches = parseWatches(gate.row.watches).filter((watch) => String(watch.id) !== id);
+    await env.DB.prepare("UPDATE users SET watches = ? WHERE id = ?")
+        .bind(JSON.stringify(watches), gate.user.id)
+        .run();
+    return json({ ok: true, watches });
+}
+
 export async function dashboardSave(request, env) {
     const gate = await premiumUser(request, env);
     if (gate.error) return gate.error;
