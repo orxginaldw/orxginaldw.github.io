@@ -565,25 +565,28 @@
     const dashboardCaptchaTrigger = document.getElementById("dashboard-captcha-trigger");
     let dashboardWatches = [];
     let dashboardCaptchaToken = "";
+    const updateDashboardSaveEnabled = () => {
+      dashboardSave.disabled = !(dashboardCaptchaToken || dashboardWebhook.value.trim());
+    };
     const resetDashboardCaptcha = () => {
       dashboardCaptchaToken = "";
-      dashboardSave.disabled = true;
       dashboardCaptchaWrap.classList.remove("server-finder-captcha-custom--verified");
       if (window.grecaptcha) {
         try { grecaptcha.reset(1); } catch {}
       }
+      updateDashboardSaveEnabled();
     };
     window.onDashboardCaptchaPass = (token) => {
       dashboardCaptchaToken = String(token || "").trim();
-      dashboardSave.disabled = !dashboardCaptchaToken;
       if (dashboardCaptchaToken) {
         dashboardCaptchaWrap.classList.add("server-finder-captcha-custom--verified");
       }
+      updateDashboardSaveEnabled();
     };
     window.onDashboardCaptchaReset = window.onDashboardCaptchaError = () => {
       dashboardCaptchaToken = "";
-      dashboardSave.disabled = true;
       dashboardCaptchaWrap.classList.remove("server-finder-captcha-custom--verified");
+      updateDashboardSaveEnabled();
     };
     const getCookie = (name) => {
       const match = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)"));
@@ -672,6 +675,7 @@
           dashboardWebhook.value = data.webhook || "";
           dashboardWatches = Array.isArray(data.watches) ? data.watches : [];
           renderDashboardWatches();
+          updateDashboardSaveEnabled();
         })
         .catch(() => {
           dashboardStatus.textContent = "Could not load dashboard.";
@@ -810,6 +814,7 @@
         dashboardWatchAdd.onclick();
       }
     };
+    dashboardWebhook.oninput = updateDashboardSaveEnabled;
     dashboardSave.onclick = () => {
       if (!dashboardCaptchaToken) {
         dashboardStatus.textContent = "Complete captcha.";
