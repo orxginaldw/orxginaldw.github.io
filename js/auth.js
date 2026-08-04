@@ -29,8 +29,8 @@ export async function authMe(request, env) {
     const token = cookie(request, "discord_token");
     const user = token ? await discordUser(token) : null;
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const row = await env.DB.prepare("SELECT bought_at FROM users WHERE id = ?").bind(user.id).first();
-    return json({ premium: row ? 1 : 0, bought_at: row && row.bought_at ? row.bought_at : null });
+    const row = await env.DB.prepare("SELECT purchased FROM users WHERE id = ?").bind(user.id).first();
+    return json({ premium: row ? 1 : 0, purchased: row && row.purchased ? row.purchased : null });
 }
 
 export function authIp(request) {

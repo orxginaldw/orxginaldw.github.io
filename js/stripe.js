@@ -10,11 +10,11 @@ function stripeClient(env) {
 
 async function setPremium(env, discordId, username, extra = {}) {
     await ensureUsers(env);
-    const bought = new Date().toISOString();
+    const purchased = Math.floor(Date.now() / 1000);
     await env.DB.prepare(
-        "INSERT INTO users (id, username, bought_at, stripe_customer, stripe_subscription) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET username = excluded.username, bought_at = COALESCE(users.bought_at, excluded.bought_at), stripe_customer = COALESCE(excluded.stripe_customer, users.stripe_customer), stripe_subscription = COALESCE(excluded.stripe_subscription, users.stripe_subscription)",
+        "INSERT INTO users (id, username, purchased, customer, subscription) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET username = excluded.username, purchased = COALESCE(users.purchased, excluded.purchased), customer = COALESCE(excluded.customer, users.customer), subscription = COALESCE(excluded.subscription, users.subscription)",
     )
-        .bind(discordId, username || discordId, bought, extra.customer || null, extra.subscription || null)
+        .bind(discordId, username || discordId, purchased, extra.customer || null, extra.subscription || null)
         .run();
 }
 
@@ -44,11 +44,11 @@ export async function stripePortal(request, env) {
     const token = cookie(request, "discord_token");
     const user = token ? await discordUser(token) : null;
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const row = await env.DB.prepare("SELECT stripe_customer FROM users WHERE id = ?").bind(user.id).first();
-    if (!row || !row.stripe_customer) return json({ error: "Forbidden" }, 403);
+    const row = await env.DB.prepare("SELECT customer FROM users WHERE id = ?").bind(user.id).first();
+    if (!row || !row.customer) return json({ error: "Forbidden" }, 403);
     const stripe = stripeClient(env);
     const session = await stripe.billingPortal.sessions.create({
-        customer: row.stripe_customer,
+        customer: row.customer,
         return_url: "https://binwoken.sh/",
     });
     return json({ url: session.url });
