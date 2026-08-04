@@ -17,6 +17,7 @@ export async function dashboardWatch(request, env) {
                 "&size=150x150&format=Png&isCircular=false",
         ),
     ]);
+    if (!infoRes.ok) return json({ error: "Invalid" }, 404);
     const info = await infoRes.json();
     const thumb = await thumbRes.json();
     return json({

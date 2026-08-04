@@ -726,7 +726,7 @@
         .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
         .then(({ ok, data }) => {
           if (!ok) {
-            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to add watches." : "Could not add user.";
+            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to add watches." : data?.error === "Invalid" ? "Invalid user." : "Could not add user.";
             return;
           }
           dashboardWatches.push({ id: data.id, username: data.username, thumbnail: data.thumbnail });
