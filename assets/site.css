@@ -532,6 +532,56 @@ button.nav-btn { appearance: none; font: inherit; }
   display: none;
 }
 
+.dashboard-accuracy {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin: 0 0 14px;
+}
+
+.dashboard-accuracy-ring {
+  width: 42px;
+  height: 42px;
+  flex: 0 0 auto;
+  transform: rotate(-90deg);
+}
+
+.dashboard-accuracy-track {
+  stroke: rgba(63, 98, 162, .35);
+  stroke-width: 3.5;
+}
+
+.dashboard-accuracy-value {
+  stroke: #22c55e;
+  stroke-width: 3.5;
+  stroke-linecap: round;
+  stroke-dasharray: 94.2478;
+  stroke-dashoffset: 0;
+  transition: stroke 0.35s ease, stroke-dashoffset 0.35s ease;
+}
+
+.dashboard-accuracy-copy {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+
+.dashboard-accuracy-label {
+  font-size: 11px;
+  font-weight: 500;
+  color: #8a9ab8;
+  letter-spacing: 0.02em;
+}
+
+.dashboard-accuracy-pct {
+  font-size: 18px;
+  font-weight: 700;
+  color: #d7e4ff;
+  line-height: 1.1;
+  transition: color 0.35s ease;
+}
+
 .dashboard-watch-item {
   display: flex;
   align-items: center;
