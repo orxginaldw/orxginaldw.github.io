@@ -155,6 +155,29 @@
           <span class="dashboard-accuracy-label">Accuracy</span>
           <span class="dashboard-accuracy-pct" id="dashboard-accuracy-pct">100%</span>
         </div>
+        <div class="dashboard-accuracy-body">
+          <p class="dashboard-accuracy-desc">
+            Users are checked one at a time. More users means each one is checked less often, this way the accuracy drops.
+            <button type="button" class="dashboard-accuracy-toggle" id="dashboard-accuracy-toggle" aria-label="Show check schedule" aria-expanded="false" aria-controls="dashboard-accuracy-panel">i</button>
+          </p>
+          <div class="dashboard-accuracy-panel" id="dashboard-accuracy-panel" aria-hidden="true">
+            <div class="dashboard-accuracy-panel-inner">
+              <span class="dashboard-accuracy-panel-title">Check schedule</span>
+              <ul class="dashboard-accuracy-schedule">
+                <li><span>1 user</span><span>as fast as possible</span></li>
+                <li><span>2 users</span><span>every 4 min</span></li>
+                <li><span>3 users</span><span>every 6 min</span></li>
+                <li><span>4 users</span><span>every 8 min</span></li>
+                <li><span>5 users</span><span>every 10 min</span></li>
+                <li><span>6 users</span><span>every 12 min</span></li>
+                <li><span>7 users</span><span>every 14 min</span></li>
+                <li><span>8 users</span><span>every 16 min</span></li>
+                <li><span>9 users</span><span>every 18 min</span></li>
+                <li><span>10 users</span><span>every 20 min</span></li>
+              </ul>
+            </div>
+          </div>
+        </div>
       </div>
       <div class="server-finder-captcha-wrap" id="dashboard-captcha-wrap">
         <button type="button" id="dashboard-captcha-trigger" class="server-finder-captcha-trigger g-recaptcha" aria-label="Verify you are not a robot" data-sitekey="6Ld2FrksAAAAAIMPagRQ4cpWlkpriNSBK2Ejv4ZC" data-size="invisible" data-badge="bottomright" data-callback="onDashboardCaptchaPass" data-expired-callback="onDashboardCaptchaReset" data-error-callback="onDashboardCaptchaError">
@@ -571,6 +594,9 @@
     const dashboardWatchCount = document.getElementById("dashboard-watch-count");
     const dashboardAccuracyRing = document.getElementById("dashboard-accuracy-ring");
     const dashboardAccuracyPct = document.getElementById("dashboard-accuracy-pct");
+    const dashboardAccuracyToggle = document.getElementById("dashboard-accuracy-toggle");
+    const dashboardAccuracyPanel = document.getElementById("dashboard-accuracy-panel");
+    const dashboardAccuracyBody = dashboardAccuracyToggle.closest(".dashboard-accuracy-body");
     const dashboardSave = document.getElementById("dashboard-save");
     const dashboardStatus = document.getElementById("dashboard-status");
     const dashboardCaptchaWrap = document.getElementById("dashboard-captcha-wrap");
@@ -650,6 +676,14 @@
       dashboardAccuracyRing.style.stroke = color;
       dashboardAccuracyPct.textContent = pct + "%";
       dashboardAccuracyPct.style.color = color;
+    };
+    dashboardAccuracyToggle.onclick = () => {
+      const open = !dashboardAccuracyPanel.classList.contains("open");
+      dashboardAccuracyPanel.classList.toggle("open", open);
+      dashboardAccuracyBody.classList.toggle("is-open", open);
+      dashboardAccuracyPanel.setAttribute("aria-hidden", open ? "false" : "true");
+      dashboardAccuracyToggle.setAttribute("aria-expanded", open ? "true" : "false");
+      dashboardAccuracyToggle.setAttribute("aria-label", open ? "Hide check schedule" : "Show check schedule");
     };
     const renderDashboardWatches = () => {
       dashboardWatchCount.textContent = dashboardWatches.length + " / 10";
