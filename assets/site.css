@@ -626,10 +626,6 @@ button.nav-btn { appearance: none; font: inherit; }
 }
 
 .server-finder-footer--result .server-finder-sponsor {
-  justify-content: flex-start;
-}
-
-.server-finder-footer--result .server-finder-sponsor__text {
   display: none;
 }
 
