@@ -181,6 +181,7 @@
     let serverFinderCaptchaToken = "";
     let searchDotsTimer = null;
     let isPremium = false;
+    let hasBilling = false;
     let discordUser = null;
     const serverFinderLock = document.getElementById("server-finder-lock");
 
@@ -528,6 +529,7 @@
       clearCookie("discord_token");
       discordUser = null;
       isPremium = false;
+      hasBilling = false;
       profileLogin.hidden = false;
       profilePremium.hidden = true;
       profileBilling.hidden = true;
@@ -540,7 +542,7 @@
       discordUser = user;
       profileLogin.hidden = true;
       profilePremium.hidden = !!isPremium;
-      profileBilling.hidden = !isPremium;
+      profileBilling.hidden = !hasBilling;
       profileLogout.hidden = false;
       profileIcon.classList.add("nav-btn__icon--avatar");
       profileIcon.innerHTML = "<img src=\"" + discordAvatarUrl(user) + "\" alt=\"\">";
@@ -551,8 +553,9 @@
         .then((response) => response.json())
         .then((data) => {
           isPremium = !!data.premium;
+          hasBilling = !!data.billing;
           profilePremium.hidden = isPremium;
-          profileBilling.hidden = !isPremium || !!data.access;
+          profileBilling.hidden = !hasBilling;
           setSearchEnabled(!!serverFinderCaptchaToken);
         })
         .catch(() => {});

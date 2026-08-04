@@ -34,6 +34,7 @@ export async function authMe(request, env) {
         premium: row ? 1 : 0,
         purchased: row && row.purchased ? row.purchased : null,
         access: row && row.access ? 1 : 0,
+        billing: row && row.customer ? 1 : 0,
     });
 }
 
