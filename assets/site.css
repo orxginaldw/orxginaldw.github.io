@@ -545,6 +545,35 @@ button.nav-btn { appearance: none; font: inherit; }
   font-size: 13px;
 }
 
+.dashboard-watch-info {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
+.dashboard-watch-thumb {
+  width: 28px;
+  height: 28px;
+  border-radius: 6px;
+  object-fit: cover;
+  flex: 0 0 auto;
+}
+
+.dashboard-watch-name {
+  font-weight: 600;
+  color: #d7e4ff;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.dashboard-watch-id {
+  color: #8a9ab8;
+  font-size: 11px;
+  white-space: nowrap;
+}
+
 .dashboard-watch-remove {
   border: 0;
   background: transparent;

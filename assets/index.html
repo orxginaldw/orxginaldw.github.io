@@ -574,21 +574,34 @@
     const renderDashboardWatches = () => {
       dashboardWatchCount.textContent = dashboardWatches.length + " / 10";
       dashboardWatchList.innerHTML = "";
-      dashboardWatches.forEach((id) => {
+      dashboardWatches.forEach((watch) => {
         const li = document.createElement("li");
         li.className = "dashboard-watch-item";
-        const span = document.createElement("span");
-        span.textContent = id;
+        const info = document.createElement("span");
+        info.className = "dashboard-watch-info";
+        const img = document.createElement("img");
+        img.className = "dashboard-watch-thumb";
+        img.src = watch.thumbnail;
+        img.alt = "";
+        const name = document.createElement("span");
+        name.className = "dashboard-watch-name";
+        name.textContent = watch.username;
+        const id = document.createElement("span");
+        id.className = "dashboard-watch-id";
+        id.textContent = watch.id;
+        info.appendChild(img);
+        info.appendChild(name);
+        info.appendChild(id);
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "dashboard-watch-remove";
         btn.setAttribute("aria-label", "Remove");
         btn.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg>";
         btn.onclick = () => {
-          dashboardWatches = dashboardWatches.filter((x) => x !== id);
+          dashboardWatches = dashboardWatches.filter((x) => x.id !== watch.id);
           renderDashboardWatches();
         };
-        li.appendChild(span);
+        li.appendChild(info);
         li.appendChild(btn);
         dashboardWatchList.appendChild(li);
       });
@@ -697,10 +710,35 @@
     };
     dashboardWatchAdd.onclick = () => {
       const id = dashboardWatchId.value.trim();
-      if (!id || dashboardWatches.includes(id) || dashboardWatches.length >= 10) return;
-      dashboardWatches.push(id);
-      dashboardWatchId.value = "";
-      renderDashboardWatches();
+      if (!id || dashboardWatches.some((x) => x.id === id) || dashboardWatches.length >= 10) return;
+      const discord = getCookie("discord_token");
+      if (!discord) {
+        dashboardStatus.textContent = "Log in to add watches.";
+        return;
+      }
+      dashboardWatchAdd.disabled = true;
+      dashboardStatus.textContent = "";
+      fetch("/dashboard/watch", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ userId: id }),
+      })
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to add watches." : "Could not add user.";
+            return;
+          }
+          dashboardWatches.push({ id: data.id, username: data.username, thumbnail: data.thumbnail });
+          dashboardWatchId.value = "";
+          renderDashboardWatches();
+        })
+        .catch(() => {
+          dashboardStatus.textContent = "Could not add user.";
+        })
+        .finally(() => {
+          dashboardWatchAdd.disabled = false;
+        });
     };
     dashboardWatchId.onkeydown = (event) => {
       if (event.key === "Enter") {
