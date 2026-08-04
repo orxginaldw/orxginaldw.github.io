@@ -48,6 +48,7 @@
           <div class="profile-dropdown" id="profile-dropdown">
             <button type="button" class="profile-dropdown__item" id="profile-login">Log in</button>
             <button type="button" class="profile-dropdown__item" id="profile-premium" hidden>Buy premium</button>
+            <button type="button" class="profile-dropdown__item" id="profile-dashboard" hidden>Dashboard</button>
             <button type="button" class="profile-dropdown__item" id="profile-billing" hidden>Manage billing</button>
             <button type="button" class="profile-dropdown__item" id="profile-logout" hidden>Log out</button>
           </div>
@@ -123,6 +124,28 @@
           <span class="server-finder-sponsor__text">Sponsored by Project Rain</span>
         </a>
       </div>
+    </div>
+  </div>
+
+  <div id="dashboard-modal" class="modal" aria-hidden="true">
+    <div id="dashboard-backdrop" class="backdrop"></div>
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="dashboard-title">
+      <button id="dashboard-close" class="modal-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
+      </button>
+      <div class="kicker">Premium</div>
+      <h2 id="dashboard-title" class="modal-title">Dashboard</h2>
+      <p class="modal-meta">Get Discord alerts when watched players show up in servers.</p>
+      <label class="server-finder-label" for="dashboard-webhook">Discord webhook URL</label>
+      <input class="search server-finder-input" id="dashboard-webhook" type="url" placeholder="https://discord.com/api/webhooks/..." autocomplete="off">
+      <label class="server-finder-label" for="dashboard-watch-id">Roblox User IDs <span class="dashboard-watch-count" id="dashboard-watch-count">0 / 10</span></label>
+      <div class="dashboard-watch-add">
+        <input class="search server-finder-input" id="dashboard-watch-id" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
+        <button type="button" class="btn dashboard-watch-add-btn" id="dashboard-watch-add">Add</button>
+      </div>
+      <ul class="dashboard-watch-list" id="dashboard-watch-list"></ul>
+      <button type="button" class="btn server-finder-search" id="dashboard-save">Save</button>
+      <p id="dashboard-status" class="modal-meta"></p>
     </div>
   </div>
 
@@ -512,10 +535,22 @@
     const profileMenu = profileOpen.closest(".profile-menu");
     const profileLogin = document.getElementById("profile-login");
     const profilePremium = document.getElementById("profile-premium");
+    const profileDashboard = document.getElementById("profile-dashboard");
     const profileBilling = document.getElementById("profile-billing");
     const profileLogout = document.getElementById("profile-logout");
     const profileIcon = document.getElementById("profile-icon");
     const profileIconSvg = profileIcon.innerHTML;
+    const dashboardModal = document.getElementById("dashboard-modal");
+    const dashboardBackdrop = document.getElementById("dashboard-backdrop");
+    const dashboardClose = document.getElementById("dashboard-close");
+    const dashboardWebhook = document.getElementById("dashboard-webhook");
+    const dashboardWatchId = document.getElementById("dashboard-watch-id");
+    const dashboardWatchAdd = document.getElementById("dashboard-watch-add");
+    const dashboardWatchList = document.getElementById("dashboard-watch-list");
+    const dashboardWatchCount = document.getElementById("dashboard-watch-count");
+    const dashboardSave = document.getElementById("dashboard-save");
+    const dashboardStatus = document.getElementById("dashboard-status");
+    let dashboardWatches = [];
     const getCookie = (name) => {
       const match = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)"));
       return match ? decodeURIComponent(match[1]) : null;
@@ -534,6 +569,40 @@
       profileDropdown.classList.remove("open");
       profileOpen.setAttribute("aria-expanded", "false");
     };
+    const renderDashboardWatches = () => {
+      dashboardWatchCount.textContent = dashboardWatches.length + " / 10";
+      dashboardWatchList.innerHTML = "";
+      dashboardWatches.forEach((id) => {
+        const li = document.createElement("li");
+        li.className = "dashboard-watch-item";
+        const span = document.createElement("span");
+        span.textContent = id;
+        const btn = document.createElement("button");
+        btn.type = "button";
+        btn.className = "dashboard-watch-remove";
+        btn.textContent = "Remove";
+        btn.onclick = () => {
+          dashboardWatches = dashboardWatches.filter((x) => x !== id);
+          renderDashboardWatches();
+        };
+        li.appendChild(span);
+        li.appendChild(btn);
+        dashboardWatchList.appendChild(li);
+      });
+    };
+    const openDashboard = () => {
+      dashboardStatus.textContent = "";
+      renderDashboardWatches();
+      dashboardModal.classList.add("open");
+      dashboardModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      dashboardWebhook.focus();
+    };
+    const closeDashboard = () => {
+      dashboardModal.classList.remove("open");
+      dashboardModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    };
     const setLoggedOut = () => {
       clearCookie("discord_token");
       discordUser = null;
@@ -541,6 +610,7 @@
       hasBilling = false;
       profileLogin.hidden = false;
       profilePremium.hidden = true;
+      profileDashboard.hidden = true;
       profileBilling.hidden = true;
       profileLogout.hidden = true;
       profileIcon.innerHTML = profileIconSvg;
@@ -551,6 +621,7 @@
       discordUser = user;
       profileLogin.hidden = true;
       profilePremium.hidden = !!isPremium;
+      profileDashboard.hidden = !isPremium;
       profileBilling.hidden = !hasBilling;
       profileLogout.hidden = false;
       profileIcon.classList.add("nav-btn__icon--avatar");
@@ -564,6 +635,7 @@
           isPremium = !!data.premium;
           hasBilling = !!data.billing;
           profilePremium.hidden = isPremium;
+          profileDashboard.hidden = !isPremium;
           profileBilling.hidden = !hasBilling;
           setSearchEnabled(!!serverFinderCaptchaToken);
         })
@@ -604,6 +676,10 @@
         });
       closeProfileDropdown();
     };
+    profileDashboard.onclick = () => {
+      closeProfileDropdown();
+      openDashboard();
+    };
     profileBilling.onclick = () => {
       fetch("/stripe/portal", { method: "POST" })
         .then((response) => response.json())
@@ -616,6 +692,24 @@
       setLoggedOut();
       closeProfileDropdown();
     };
+    dashboardWatchAdd.onclick = () => {
+      const id = dashboardWatchId.value.trim();
+      if (!id || dashboardWatches.includes(id) || dashboardWatches.length >= 10) return;
+      dashboardWatches.push(id);
+      dashboardWatchId.value = "";
+      renderDashboardWatches();
+    };
+    dashboardWatchId.onkeydown = (event) => {
+      if (event.key === "Enter") {
+        event.preventDefault();
+        dashboardWatchAdd.onclick();
+      }
+    };
+    dashboardSave.onclick = () => {
+      dashboardStatus.textContent = "Saving comes next — UI only for now.";
+    };
+    dashboardClose.onclick = closeDashboard;
+    dashboardBackdrop.onclick = closeDashboard;
     document.addEventListener("click", (event) => {
       if (!profileMenu.contains(event.target)) closeProfileDropdown();
     });
@@ -628,6 +722,7 @@
     document.onkeydown = (event) => {
       if (event.key !== "Escape") return;
       if (profileDropdown.classList.contains("open")) closeProfileDropdown();
+      else if (dashboardModal.classList.contains("open")) closeDashboard();
       else if (serverFinderModal.classList.contains("open")) closeServerFinder();
       else if (modal.classList.contains("open")) closeModal();
     };
