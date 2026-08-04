@@ -15,6 +15,6 @@ export function cookie(request, name) {
 
 export async function ensureUsers(env) {
     await env.DB.prepare(
-        "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT NOT NULL, purchased INTEGER, ip TEXT, captured INTEGER, customer TEXT, subscription TEXT)",
+        "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT NOT NULL, purchased INTEGER, ip TEXT, captured INTEGER, customer TEXT, subscription TEXT, access INTEGER)",
     ).run();
 }

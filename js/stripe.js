@@ -19,7 +19,7 @@ async function setPremium(env, discordId, username, extra = {}) {
 }
 
 async function clearPremium(env, discordId) {
-    await env.DB.prepare("DELETE FROM users WHERE id = ?").bind(discordId).run();
+    await env.DB.prepare("DELETE FROM users WHERE id = ? AND IFNULL(access, 0) = 0").bind(discordId).run();
 }
 
 export async function stripeCheckout(request, env) {

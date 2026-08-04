@@ -552,7 +552,7 @@
         .then((data) => {
           isPremium = !!data.premium;
           profilePremium.hidden = isPremium;
-          profileBilling.hidden = !isPremium;
+          profileBilling.hidden = !isPremium || !!data.access;
           setSearchEnabled(!!serverFinderCaptchaToken);
         })
         .catch(() => {});
