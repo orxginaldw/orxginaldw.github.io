@@ -1,4 +1,5 @@
-import { json } from "./util.js";
+import { json, cookie } from "./util.js";
+import { discordUser } from "./discord.js";
 
 export async function authLogin() {
     const params = new URLSearchParams({
@@ -25,9 +26,10 @@ export function authPage() {
 }
 
 export async function authMe(request, env) {
-    const body = await request.json();
-    const id = String(body.id);
-    const row = await env.DB.prepare("SELECT bought_at FROM users WHERE id = ?").bind(id).first();
+    const token = cookie(request, "discord_token");
+    const user = token ? await discordUser(token) : null;
+    if (!user) return json({ error: "Unauthorized" }, 401);
+    const row = await env.DB.prepare("SELECT bought_at FROM users WHERE id = ?").bind(user.id).first();
     return json({ premium: row ? 1 : 0, bought_at: row && row.bought_at ? row.bought_at : null });
 }
 

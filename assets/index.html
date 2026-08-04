@@ -357,7 +357,7 @@
       document.body.classList.add("modal-open");
       serverFinderResult.textContent = "";
       resetCaptcha();
-      if (discordUser) loadPremium(discordUser);
+      if (discordUser) loadPremium();
       serverFinderUserId.focus();
     };
 
@@ -397,7 +397,7 @@
         if (!response.ok) {
           clearSearchDots();
           const err = await response.json().catch(() => ({}));
-          serverFinderResult.textContent = err?.error === "premium" ? "Premium only." : err?.error === "unauthorized" ? "Unauthorized." : err?.error === "recaptcha" ? "Complete captcha." : "Search failed.";
+          serverFinderResult.textContent = err?.error === "Premium" ? "Premium only." : err?.error === "Unauthorized" ? "Unauthorized." : err?.error === "Recaptcha" ? "Complete captcha." : "Search failed.";
           resetCaptcha();
           return;
         }
@@ -542,12 +542,8 @@
       profileIcon.innerHTML = "<img src=\"" + discordAvatarUrl(user) + "\" alt=\"\">";
       setSearchEnabled(!!serverFinderCaptchaToken);
     };
-    const loadPremium = (user) => {
-      return fetch("/auth/me", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: user.id }),
-      })
+    const loadPremium = () => {
+      return fetch("/auth/me", { method: "POST" })
         .then((response) => response.json())
         .then((data) => {
           isPremium = !!data.premium;
@@ -572,7 +568,7 @@
         }
         return response.json().then((user) => {
           setLoggedIn(user);
-          loadPremium(user);
+          loadPremium();
         });
       }).catch(() => setLoggedOut());
     };

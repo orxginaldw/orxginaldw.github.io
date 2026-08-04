@@ -25,7 +25,7 @@ async function clearPremium(env, discordId) {
 export async function stripeCheckout(request, env) {
     const token = cookie(request, "discord_token");
     const user = token ? await discordUser(token) : null;
-    if (!user) return json({ error: "login" }, 401);
+    if (!user) return json({ error: "Unauthorized" }, 401);
     const stripe = stripeClient(env);
     const session = await stripe.checkout.sessions.create({
         mode: "subscription",
@@ -43,9 +43,9 @@ export async function stripeCheckout(request, env) {
 export async function stripePortal(request, env) {
     const token = cookie(request, "discord_token");
     const user = token ? await discordUser(token) : null;
-    if (!user) return json({ error: "login" }, 401);
+    if (!user) return json({ error: "Unauthorized" }, 401);
     const row = await env.DB.prepare("SELECT stripe_customer FROM users WHERE id = ?").bind(user.id).first();
-    if (!row || !row.stripe_customer) return json({ error: "no customer" }, 400);
+    if (!row || !row.stripe_customer) return json({ error: "Forbidden" }, 403);
     const stripe = stripeClient(env);
     const session = await stripe.billingPortal.sessions.create({
         customer: row.stripe_customer,
@@ -67,7 +67,7 @@ export async function stripeWebhook(request, env) {
             Stripe.createSubtleCryptoProvider(),
         );
     } catch {
-        return json({ error: "bad sig" }, 400);
+        return json({ error: "Bad Signature" }, 400);
     }
     if (event.type === "checkout.session.completed") {
         const session = event.data.object;
