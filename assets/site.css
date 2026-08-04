@@ -499,22 +499,22 @@ button.nav-btn { appearance: none; font: inherit; }
 }
 
 .dashboard-watch-add-btn {
-  flex: 0 0 42px;
-  width: 42px;
-  height: 42px;
-  min-width: 42px;
-  max-width: 42px;
+  flex: 0 0 32px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  max-width: 32px;
   padding: 0;
   margin-top: 0;
-  border-radius: 10px;
+  border-radius: 8px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
 }
 
 .dashboard-watch-add-btn svg {
-  width: 18px;
-  height: 18px;
+  width: 16px;
+  height: 16px;
   display: block;
 }
 
@@ -580,13 +580,13 @@ button.nav-btn { appearance: none; font: inherit; }
 #dashboard-modal .btn:active:not(:disabled) { transform: translateY(-1px); }
 #dashboard-modal .search { padding: 11px 12px; font-size: 14px; }
 #dashboard-modal .btn.dashboard-watch-add-btn {
-  width: 42px;
-  height: 42px;
-  min-width: 42px;
-  max-width: 42px;
+  width: 32px;
+  height: 32px;
+  min-width: 32px;
+  max-width: 32px;
   padding: 0;
   margin-top: 0;
-  border-radius: 10px;
+  border-radius: 8px;
 }
 
 #modal .backdrop { background: rgba(2, 4, 9, .8); backdrop-filter: blur(6px); opacity: 0; }
