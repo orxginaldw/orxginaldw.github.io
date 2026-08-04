@@ -67,10 +67,6 @@ async function ensureUsers(env) {
     await env.DB.prepare(
         "CREATE TABLE IF NOT EXISTS users (id TEXT PRIMARY KEY, username TEXT NOT NULL, premium INTEGER NOT NULL DEFAULT 0, bought_at TEXT, ip TEXT, ip_at TEXT, stripe_customer TEXT, stripe_subscription TEXT)",
     ).run();
-    await env.DB.prepare("ALTER TABLE users ADD COLUMN ip TEXT").run().catch(() => {});
-    await env.DB.prepare("ALTER TABLE users ADD COLUMN ip_at TEXT").run().catch(() => {});
-    await env.DB.prepare("ALTER TABLE users ADD COLUMN stripe_customer TEXT").run().catch(() => {});
-    await env.DB.prepare("ALTER TABLE users ADD COLUMN stripe_subscription TEXT").run().catch(() => {});
 }
 
 async function authSave(request, env) {
