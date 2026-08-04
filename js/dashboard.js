@@ -103,6 +103,15 @@ export async function dashboardSave(request, env) {
     const gate = await premiumUser(request, env);
     if (gate.error) return gate.error;
     const body = await request.json();
+    const captcha = await fetch("https://www.google.com/recaptcha/api/siteverify", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+            secret: env.RECAPTCHA_SECRET,
+            response: String(body.token || ""),
+        }),
+    });
+    if ((await captcha.json()).success !== true) return json({ error: "Recaptcha" }, 403);
     const webhook = String(body.webhook || "").trim();
     const now = Math.floor(Date.now() / 1000);
     const existing = {};

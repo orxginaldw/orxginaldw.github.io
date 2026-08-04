@@ -146,7 +146,16 @@
         </button>
       </div>
       <ul class="dashboard-watch-list" id="dashboard-watch-list"></ul>
-      <button type="button" class="btn server-finder-search" id="dashboard-save">Save</button>
+      <div class="server-finder-captcha-wrap" id="dashboard-captcha-wrap">
+        <button type="button" id="dashboard-captcha-trigger" class="server-finder-captcha-trigger g-recaptcha" aria-label="Verify you are not a robot" data-sitekey="6Ld2FrksAAAAAIMPagRQ4cpWlkpriNSBK2Ejv4ZC" data-size="invisible" data-badge="bottomright" data-callback="onDashboardCaptchaPass" data-expired-callback="onDashboardCaptchaReset" data-error-callback="onDashboardCaptchaError">
+          <span class="server-finder-captcha-box" aria-hidden="true"></span>
+          <span class="server-finder-captcha-label">I'm not a robot</span>
+        </button>
+        <div class="server-finder-captcha-meta">
+          <p class="server-finder-captcha-legal">Protected by reCAPTCHA. Google <a href="https://policies.google.com/privacy" target="_blank" rel="noreferrer">Privacy</a> and <a href="https://policies.google.com/terms" target="_blank" rel="noreferrer">Terms</a> apply.</p>
+        </div>
+      </div>
+      <button type="button" class="btn server-finder-search" id="dashboard-save" disabled>Save</button>
       <p id="dashboard-status" class="modal-meta"></p>
     </div>
   </div>
@@ -230,7 +239,7 @@
       setSearchEnabled(false);
       serverFinderCaptchaWrap.classList.remove("server-finder-captcha-custom--verified");
       if (window.grecaptcha) {
-        try { grecaptcha.reset(); } catch {}
+        try { grecaptcha.reset(0); } catch {}
       }
     };
 
@@ -552,7 +561,30 @@
     const dashboardWatchCount = document.getElementById("dashboard-watch-count");
     const dashboardSave = document.getElementById("dashboard-save");
     const dashboardStatus = document.getElementById("dashboard-status");
+    const dashboardCaptchaWrap = document.getElementById("dashboard-captcha-wrap");
+    const dashboardCaptchaTrigger = document.getElementById("dashboard-captcha-trigger");
     let dashboardWatches = [];
+    let dashboardCaptchaToken = "";
+    const resetDashboardCaptcha = () => {
+      dashboardCaptchaToken = "";
+      dashboardSave.disabled = true;
+      dashboardCaptchaWrap.classList.remove("server-finder-captcha-custom--verified");
+      if (window.grecaptcha) {
+        try { grecaptcha.reset(1); } catch {}
+      }
+    };
+    window.onDashboardCaptchaPass = (token) => {
+      dashboardCaptchaToken = String(token || "").trim();
+      dashboardSave.disabled = !dashboardCaptchaToken;
+      if (dashboardCaptchaToken) {
+        dashboardCaptchaWrap.classList.add("server-finder-captcha-custom--verified");
+      }
+    };
+    window.onDashboardCaptchaReset = window.onDashboardCaptchaError = () => {
+      dashboardCaptchaToken = "";
+      dashboardSave.disabled = true;
+      dashboardCaptchaWrap.classList.remove("server-finder-captcha-custom--verified");
+    };
     const getCookie = (name) => {
       const match = document.cookie.match(new RegExp("(?:^|; )" + name.replace(/([.$?*|{}()[\]\\/+^])/g, "\\$1") + "=([^;]*)"));
       return match ? decodeURIComponent(match[1]) : null;
@@ -608,6 +640,7 @@
     };
     const openDashboard = () => {
       dashboardStatus.textContent = "";
+      resetDashboardCaptcha();
       dashboardModal.classList.add("open");
       dashboardModal.setAttribute("aria-hidden", "false");
       document.body.classList.add("modal-open");
@@ -760,30 +793,35 @@
       }
     };
     dashboardSave.onclick = () => {
+      if (!dashboardCaptchaToken) {
+        dashboardStatus.textContent = "Complete captcha.";
+        return;
+      }
       dashboardSave.disabled = true;
       dashboardStatus.textContent = "";
       fetch("/dashboard", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ webhook: dashboardWebhook.value.trim(), watches: dashboardWatches }),
+        body: JSON.stringify({ webhook: dashboardWebhook.value.trim(), watches: dashboardWatches, token: dashboardCaptchaToken }),
       })
         .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
         .then(({ ok, data }) => {
           if (!ok) {
-            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to save." : "Could not save.";
+            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to save." : data?.error === "Recaptcha" ? "Complete captcha." : "Could not save.";
+            resetDashboardCaptcha();
             return;
           }
           dashboardWatches = Array.isArray(data.watches) ? data.watches : dashboardWatches;
           renderDashboardWatches();
           dashboardStatus.textContent = "Saved.";
+          resetDashboardCaptcha();
         })
         .catch(() => {
           dashboardStatus.textContent = "Could not save.";
-        })
-        .finally(() => {
-          dashboardSave.disabled = false;
+          resetDashboardCaptcha();
         });
     };
+    dashboardCaptchaTrigger.onclick = () => { if (window.grecaptcha) return; };
     dashboardClose.onclick = closeDashboard;
     dashboardBackdrop.onclick = closeDashboard;
     document.addEventListener("click", (event) => {

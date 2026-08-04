@@ -607,6 +607,17 @@ button.nav-btn { appearance: none; font: inherit; }
 #dashboard-modal .btn::before { display: none; }
 #dashboard-modal .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); border-color: #5f84cb; box-shadow: none; }
 #dashboard-modal .btn:active:not(:disabled) { transform: translateY(-1px); }
+#dashboard-modal .btn.server-finder-search:disabled,
+#dashboard-modal .btn.server-finder-search:disabled:hover {
+  cursor: not-allowed;
+  opacity: 1;
+  filter: none;
+  transform: none;
+  color: #8fa0c0;
+  border-color: #334563;
+  background: linear-gradient(180deg, #2b3c5e, #223450);
+  box-shadow: none;
+}
 #dashboard-modal .search { padding: 11px 12px; font-size: 14px; }
 #dashboard-modal .btn.dashboard-watch-add-btn {
   width: 28px;
