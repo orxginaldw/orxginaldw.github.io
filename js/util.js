@@ -6,9 +6,11 @@ export function json(data, status = 200) {
 }
 
 export function cookie(request, name) {
-    const raw = request.headers.get("Cookie") || "";
-    const match = raw.match(new RegExp("(?:^|; )" + name.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "=([^;]*)"));
-    return match ? decodeURIComponent(match[1]) : null;
+    for (const part of (request.headers.get("Cookie") || "").split(";")) {
+        const [key, ...rest] = part.trim().split("=");
+        if (key === name) return decodeURIComponent(rest.join("="));
+    }
+    return null;
 }
 
 export async function ensureUsers(env) {
