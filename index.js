@@ -70,16 +70,19 @@ async function ensureUsers(env) {
 }
 
 async function authSave(request, env) {
-    const body = await request.json();
-    const id = String(body.id);
-    const username = String(body.username);
-    await ensureUsers(env);
-    await env.DB.prepare(
-        "INSERT INTO users (id, username, premium, bought_at) VALUES (?, ?, 0, NULL) ON CONFLICT(id) DO UPDATE SET username = excluded.username",
-    )
-        .bind(id, username)
-        .run();
-    return json({ ok: true });
+    try {
+        const body = await request.json();
+        const id = String(body.id);
+        const username = String(body.username);
+        await env.DB.prepare(
+            "INSERT INTO users (id, username, premium, bought_at) VALUES (?, ?, 0, NULL) ON CONFLICT(id) DO UPDATE SET username = excluded.username",
+        )
+            .bind(id, username)
+            .run();
+        return json({ ok: true });
+    } catch (e) {
+        return json({ error: String(e && e.message ? e.message : e) }, 500);
+    }
 }
 
 async function authIp(request) {
@@ -87,11 +90,14 @@ async function authIp(request) {
 }
 
 async function authMe(request, env) {
-    const body = await request.json();
-    const id = String(body.id);
-    await ensureUsers(env);
-    const row = await env.DB.prepare("SELECT premium, bought_at FROM users WHERE id = ?").bind(id).first();
-    return json({ premium: row?.premium ? 1 : 0, bought_at: row?.bought_at || null });
+    try {
+        const body = await request.json();
+        const id = String(body.id);
+        const row = await env.DB.prepare("SELECT premium, bought_at FROM users WHERE id = ?").bind(id).first();
+        return json({ premium: row && row.premium ? 1 : 0, bought_at: row && row.bought_at ? row.bought_at : null });
+    } catch (e) {
+        return json({ error: String(e && e.message ? e.message : e) }, 500);
+    }
 }
 
 function cookie(request, name) {
