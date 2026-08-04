@@ -701,9 +701,17 @@ button.nav-btn { appearance: none; font: inherit; }
 
 .server-finder-lock {
   position: relative;
-  display: inline-flex;
+  display: none;
   align-items: center;
   color: #9eb0d0;
+}
+
+.server-finder-search--locked .server-finder-lock {
+  display: inline-flex;
+}
+
+.server-finder-lock[hidden] {
+  display: none !important;
 }
 
 .server-finder-lock svg {
