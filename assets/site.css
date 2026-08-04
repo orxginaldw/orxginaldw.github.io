@@ -595,6 +595,24 @@ button.nav-btn { appearance: none; font: inherit; }
 .server-finder-input { margin-bottom: 14px; }
 .server-finder-search { width: 100%; }
 
+.server-finder-sponsor {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 14px 0 0;
+  font-size: 11px;
+  line-height: 1;
+  color: #7a8aa8;
+}
+
+.server-finder-sponsor img {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  object-fit: cover;
+}
+
 .server-finder-captcha-wrap {
   position: relative;
   margin: 0 0 10px;
