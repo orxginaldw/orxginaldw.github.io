@@ -133,7 +133,7 @@
       <button id="dashboard-close" class="modal-close" type="button" aria-label="Close">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
       </button>
-      <div class="kicker">Premium</div>
+      <div class="kicker">Lookup</div>
       <h2 id="dashboard-title" class="modal-title">Dashboard</h2>
       <p class="modal-meta">Get Discord alerts when watched players show up in servers.</p>
       <label class="server-finder-label" for="dashboard-webhook">Discord webhook URL</label>
@@ -141,7 +141,9 @@
       <label class="server-finder-label" for="dashboard-watch-id">Roblox User IDs <span class="dashboard-watch-count" id="dashboard-watch-count">0 / 10</span></label>
       <div class="dashboard-watch-add">
         <input class="search server-finder-input" id="dashboard-watch-id" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
-        <button type="button" class="btn dashboard-watch-add-btn" id="dashboard-watch-add">Add</button>
+        <button type="button" class="btn dashboard-watch-add-btn" id="dashboard-watch-add" aria-label="Add">
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14"/><path d="M12 5v14"/></svg>
+        </button>
       </div>
       <ul class="dashboard-watch-list" id="dashboard-watch-list"></ul>
       <button type="button" class="btn server-finder-search" id="dashboard-save">Save</button>
@@ -580,7 +582,8 @@
         const btn = document.createElement("button");
         btn.type = "button";
         btn.className = "dashboard-watch-remove";
-        btn.textContent = "Remove";
+        btn.setAttribute("aria-label", "Remove");
+        btn.innerHTML = "<svg xmlns=\"http://www.w3.org/2000/svg\" width=\"24\" height=\"24\" viewBox=\"0 0 24 24\" fill=\"none\" stroke=\"currentColor\" stroke-width=\"2\" stroke-linecap=\"round\" stroke-linejoin=\"round\" aria-hidden=\"true\"><path d=\"M18 6 6 18\"/><path d=\"m6 6 12 12\"/></svg>";
         btn.onclick = () => {
           dashboardWatches = dashboardWatches.filter((x) => x !== id);
           renderDashboardWatches();

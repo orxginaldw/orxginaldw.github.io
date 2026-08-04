@@ -499,8 +499,18 @@ button.nav-btn { appearance: none; font: inherit; }
 
 .dashboard-watch-add-btn {
   flex: 0 0 auto;
-  width: auto;
-  padding: 0 16px;
+  width: 44px;
+  min-width: 44px;
+  padding: 0;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-watch-add-btn svg {
+  width: 18px;
+  height: 18px;
+  display: block;
 }
 
 .dashboard-watch-list {
@@ -535,8 +545,18 @@ button.nav-btn { appearance: none; font: inherit; }
   background: transparent;
   color: #8a9ab8;
   cursor: pointer;
-  font-size: 12px;
   padding: 0;
+  width: 28px;
+  height: 28px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.dashboard-watch-remove svg {
+  width: 16px;
+  height: 16px;
+  display: block;
 }
 
 .dashboard-watch-remove:hover {
@@ -554,7 +574,7 @@ button.nav-btn { appearance: none; font: inherit; }
 #dashboard-modal .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); border-color: #5f84cb; box-shadow: none; }
 #dashboard-modal .btn:active:not(:disabled) { transform: translateY(-1px); }
 #dashboard-modal .search { padding: 11px 12px; font-size: 14px; }
-#dashboard-modal .dashboard-watch-add-btn { width: auto; }
+#dashboard-modal .dashboard-watch-add-btn { width: 44px; }
 
 #modal .backdrop { background: rgba(2, 4, 9, .8); backdrop-filter: blur(6px); opacity: 0; }
 #modal.open .backdrop { animation: fadeIn .28s ease forwards; }
