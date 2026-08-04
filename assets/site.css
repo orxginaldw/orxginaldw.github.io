@@ -610,9 +610,9 @@ button.nav-btn { appearance: none; font: inherit; }
   background: rgba(14, 20, 36, .85);
   color: #8a9ab8;
   cursor: pointer;
-  vertical-align: -3px;
+  vertical-align: -2px;
   position: relative;
-  top: 2px;
+  top: 4px;
   left: -2px;
   flex-shrink: 0;
 }
