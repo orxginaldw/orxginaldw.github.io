@@ -123,6 +123,7 @@ async function stripeCheckout(request, env) {
         cancel_url: "https://binwoken.sh/",
         "line_items[0][price]": env.STRIPE_ID,
         "line_items[0][quantity]": "1",
+        allow_promotion_codes: "true",
         client_reference_id: user.id,
         "metadata[discord_id]": user.id,
         "subscription_data[metadata][discord_id]": user.id,
