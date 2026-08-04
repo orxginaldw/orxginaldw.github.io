@@ -35,36 +35,20 @@ function parseWatches(raw) {
     return Array.isArray(list) ? list.slice(0, 10) : [];
 }
 
-async function refreshWatches(watches) {
-    const now = Math.floor(Date.now() / 1000);
-    let changed = false;
-    const out = [];
-    for (const watch of watches) {
-        const id = String(watch.id || "").trim();
-        if (!id) continue;
-        const refreshed = Number(watch.refreshed) || 0;
-        if (now - refreshed < 3600 && watch.username && watch.thumbnail) {
-            out.push({
-                id,
-                username: watch.username,
-                thumbnail: watch.thumbnail,
-                added: Number(watch.added) || refreshed || now,
-                refreshed,
-            });
-            continue;
+async function cachedWatch(env, id) {
+    const rows = await env.DB.prepare("SELECT watches FROM users WHERE IFNULL(watches, '') NOT IN ('', '[]')").all();
+    for (const row of rows.results || []) {
+        for (const watch of parseWatches(row.watches)) {
+            if (String(watch.id) === id && watch.thumbnail) {
+                return {
+                    id,
+                    username: watch.username || id,
+                    thumbnail: watch.thumbnail,
+                };
+            }
         }
-        const fresh = await robloxUser(id);
-        if (!fresh) continue;
-        changed = true;
-        out.push({
-            id: fresh.id,
-            username: fresh.username,
-            thumbnail: fresh.thumbnail,
-            added: Number(watch.added) || now,
-            refreshed: now,
-        });
     }
-    return { watches: out, changed };
+    return null;
 }
 
 export async function dashboardWatch(request, env) {
@@ -72,7 +56,8 @@ export async function dashboardWatch(request, env) {
     if (gate.error) return gate.error;
     const { userId } = await request.json();
     const id = String(userId || "").trim();
-    const fresh = await robloxUser(id);
+    const cached = await cachedWatch(env, id);
+    const fresh = cached || (await robloxUser(id));
     if (!fresh) return json({ error: "Invalid" }, 404);
     const now = Math.floor(Date.now() / 1000);
     return json({
@@ -87,15 +72,9 @@ export async function dashboardWatch(request, env) {
 export async function dashboardGet(request, env) {
     const gate = await premiumUser(request, env);
     if (gate.error) return gate.error;
-    const { watches, changed } = await refreshWatches(parseWatches(gate.row.watches));
-    if (changed) {
-        await env.DB.prepare("UPDATE users SET watches = ? WHERE id = ?")
-            .bind(JSON.stringify(watches), gate.user.id)
-            .run();
-    }
     return json({
         webhook: gate.row.webhook || "",
-        watches,
+        watches: parseWatches(gate.row.watches),
     });
 }
 
@@ -133,23 +112,22 @@ export async function dashboardSave(request, env) {
         const id = String(item.id || "").trim();
         if (!id) continue;
         const prev = existing[id];
-        const refreshed = Number(item.refreshed) || Number(prev && prev.refreshed) || 0;
         let username = item.username || (prev && prev.username) || "";
         let thumbnail = item.thumbnail || (prev && prev.thumbnail) || "";
-        let nextRefreshed = refreshed;
-        if (!username || !thumbnail || now - refreshed >= 3600) {
-            const fresh = await robloxUser(id);
+        let refreshed = Number(item.refreshed) || Number(prev && prev.refreshed) || now;
+        if (!username || !thumbnail) {
+            const fresh = (await cachedWatch(env, id)) || (await robloxUser(id));
             if (!fresh) continue;
             username = fresh.username;
             thumbnail = fresh.thumbnail;
-            nextRefreshed = now;
+            refreshed = now;
         }
         watches.push({
             id,
             username,
             thumbnail,
             added: Number(item.added) || Number(prev && prev.added) || now,
-            refreshed: nextRefreshed,
+            refreshed,
         });
     }
     await env.DB.prepare("UPDATE users SET webhook = ?, watches = ? WHERE id = ?")
