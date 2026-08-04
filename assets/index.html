@@ -642,13 +642,13 @@
     };
     const updateDashboardAccuracy = () => {
       const n = dashboardWatches.length;
-      const pct = n <= 1 ? 100 : 100 / (2 * n);
+      const pct = Math.round(100 * Math.pow(0.8, Math.max(n - 1, 0)));
       const color = dashboardAccuracyColor(pct);
       const ring = 2 * Math.PI * 15;
       dashboardAccuracyRing.style.strokeDasharray = String(ring);
       dashboardAccuracyRing.style.strokeDashoffset = String(ring * (1 - pct / 100));
       dashboardAccuracyRing.style.stroke = color;
-      dashboardAccuracyPct.textContent = (Number.isInteger(pct) ? pct : pct.toFixed(1).replace(/\.0$/, "")) + "%";
+      dashboardAccuracyPct.textContent = pct + "%";
       dashboardAccuracyPct.style.color = color;
     };
     const renderDashboardWatches = () => {
