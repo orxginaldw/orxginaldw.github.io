@@ -565,8 +565,18 @@
     const dashboardCaptchaTrigger = document.getElementById("dashboard-captcha-trigger");
     let dashboardWatches = [];
     let dashboardCaptchaToken = "";
+    let dashboardSavedWebhook = "";
+    let dashboardSavedWatchIds = "";
+    const dashboardWatchIdsKey = (watches) => watches.map((watch) => String(watch.id)).slice().sort().join(",");
+    const dashboardDirty = () =>
+      dashboardWebhook.value.trim() !== dashboardSavedWebhook ||
+      dashboardWatchIdsKey(dashboardWatches) !== dashboardSavedWatchIds;
+    const rememberDashboardSaved = () => {
+      dashboardSavedWebhook = dashboardWebhook.value.trim();
+      dashboardSavedWatchIds = dashboardWatchIdsKey(dashboardWatches);
+    };
     const updateDashboardSaveEnabled = () => {
-      dashboardSave.disabled = !(dashboardCaptchaToken || dashboardWebhook.value.trim());
+      dashboardSave.disabled = !(dashboardCaptchaToken && dashboardDirty());
     };
     const resetDashboardCaptcha = () => {
       dashboardCaptchaToken = "";
@@ -649,6 +659,8 @@
               }
               dashboardWatches = Array.isArray(data.watches) ? data.watches : dashboardWatches;
               renderDashboardWatches();
+              rememberDashboardSaved();
+              updateDashboardSaveEnabled();
             })
             .catch(() => {
               dashboardStatus.textContent = "Could not remove.";
@@ -675,6 +687,7 @@
           dashboardWebhook.value = data.webhook || "";
           dashboardWatches = Array.isArray(data.watches) ? data.watches : [];
           renderDashboardWatches();
+          rememberDashboardSaved();
           updateDashboardSaveEnabled();
         })
         .catch(() => {
@@ -800,6 +813,7 @@
           dashboardWatches.push({ id: data.id, username: data.username, thumbnail: data.thumbnail, added: data.added, refreshed: data.refreshed });
           dashboardWatchId.value = "";
           renderDashboardWatches();
+          updateDashboardSaveEnabled();
         })
         .catch(() => {
           dashboardStatus.textContent = "Could not add user.";
@@ -820,6 +834,10 @@
         dashboardStatus.textContent = "Complete captcha.";
         return;
       }
+      if (!dashboardDirty()) {
+        dashboardStatus.textContent = "No changes to save.";
+        return;
+      }
       dashboardSave.disabled = true;
       dashboardStatus.textContent = "";
       fetch("/dashboard", {
@@ -836,6 +854,7 @@
           }
           dashboardWatches = Array.isArray(data.watches) ? data.watches : dashboardWatches;
           renderDashboardWatches();
+          rememberDashboardSaved();
           dashboardStatus.textContent = "Saved.";
           resetDashboardCaptcha();
         })
