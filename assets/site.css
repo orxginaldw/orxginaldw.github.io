@@ -602,7 +602,7 @@ button.nav-btn { appearance: none; font: inherit; }
   justify-content: center;
   width: 14px;
   height: 14px;
-  margin-left: 4px;
+  margin-left: 1px;
   margin-right: 0;
   padding: 0;
   border: 1px solid rgba(63, 98, 162, .55);
@@ -610,7 +610,10 @@ button.nav-btn { appearance: none; font: inherit; }
   background: rgba(14, 20, 36, .85);
   color: #8a9ab8;
   cursor: pointer;
-  vertical-align: -1px;
+  vertical-align: -3px;
+  position: relative;
+  top: 2px;
+  left: -2px;
   flex-shrink: 0;
 }
 
