@@ -608,10 +608,23 @@
     };
     const openDashboard = () => {
       dashboardStatus.textContent = "";
-      renderDashboardWatches();
       dashboardModal.classList.add("open");
       dashboardModal.setAttribute("aria-hidden", "false");
       document.body.classList.add("modal-open");
+      fetch("/dashboard")
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : "Could not load dashboard.";
+            return;
+          }
+          dashboardWebhook.value = data.webhook || "";
+          dashboardWatches = Array.isArray(data.watches) ? data.watches : [];
+          renderDashboardWatches();
+        })
+        .catch(() => {
+          dashboardStatus.textContent = "Could not load dashboard.";
+        });
       dashboardWebhook.focus();
     };
     const closeDashboard = () => {
@@ -729,7 +742,7 @@
             dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to add watches." : data?.error === "Invalid" ? "Invalid user." : "Could not add user.";
             return;
           }
-          dashboardWatches.push({ id: data.id, username: data.username, thumbnail: data.thumbnail });
+          dashboardWatches.push({ id: data.id, username: data.username, thumbnail: data.thumbnail, added: data.added, refreshed: data.refreshed });
           dashboardWatchId.value = "";
           renderDashboardWatches();
         })
@@ -747,7 +760,29 @@
       }
     };
     dashboardSave.onclick = () => {
-      dashboardStatus.textContent = "Saving comes next — UI only for now.";
+      dashboardSave.disabled = true;
+      dashboardStatus.textContent = "";
+      fetch("/dashboard", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ webhook: dashboardWebhook.value.trim(), watches: dashboardWatches }),
+      })
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to save." : "Could not save.";
+            return;
+          }
+          dashboardWatches = Array.isArray(data.watches) ? data.watches : dashboardWatches;
+          renderDashboardWatches();
+          dashboardStatus.textContent = "Saved.";
+        })
+        .catch(() => {
+          dashboardStatus.textContent = "Could not save.";
+        })
+        .finally(() => {
+          dashboardSave.disabled = false;
+        });
     };
     dashboardClose.onclick = closeDashboard;
     dashboardBackdrop.onclick = closeDashboard;
