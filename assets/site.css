@@ -613,6 +613,16 @@ button.nav-btn { appearance: none; font: inherit; }
   object-fit: cover;
 }
 
+.server-finder-sponsor a {
+  color: #8eb6ff;
+  text-decoration: none;
+}
+
+.server-finder-sponsor a:hover {
+  color: #b6d0ff;
+  text-decoration: underline;
+}
+
 .server-finder-captcha-wrap {
   position: relative;
   margin: 0 0 10px;
