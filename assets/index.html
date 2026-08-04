@@ -116,11 +116,13 @@
           </span>
         </span>
       </button>
-      <p id="server-finder-result" class="modal-meta"></p>
-      <p class="server-finder-sponsor">
-        <img src="images/projectrain.png" alt="" width="14" height="14">
-        <span>Sponsored by <a href="https://discord.gg/project-rain" target="_blank" rel="noreferrer">Project Rain</a></span>
-      </p>
+      <div class="server-finder-footer" id="server-finder-footer">
+        <p id="server-finder-result" class="modal-meta"></p>
+        <a class="server-finder-sponsor" href="https://discord.gg/project-rain" target="_blank" rel="noreferrer">
+          <img src="images/projectrain.png" alt="" width="14" height="14">
+          <span class="server-finder-sponsor__text">Sponsored by Project Rain</span>
+        </a>
+      </div>
     </div>
   </div>
 
@@ -170,6 +172,7 @@
     const serverFinderUserId = document.getElementById("server-finder-user-id");
     const serverFinderSearch = document.getElementById("server-finder-search");
     const serverFinderResult = document.getElementById("server-finder-result");
+    const serverFinderFooter = document.getElementById("server-finder-footer");
     const serverFinderCaptchaTrigger = document.getElementById("server-finder-captcha-trigger");
     const serverFinderSearchCount = document.getElementById("server-finder-search-count");
     const serverFinderDisclaimer = document.getElementById("server-finder-disclaimer");
@@ -194,7 +197,7 @@
       }
       serverFinderSearch.classList.remove("server-finder-search--locked");
       serverFinderLock.hidden = true;
-      serverFinderSearch.disabled = !enabled;
+      serverFinderSearch.disabled = !enabled || !serverFinderUserId.value.trim();
     };
 
     const resetCaptcha = () => {
@@ -266,6 +269,11 @@
       }
     };
 
+    const setServerFinderResult = (text) => {
+      serverFinderResult.textContent = text;
+      serverFinderFooter.classList.toggle("server-finder-footer--result", !!text);
+    };
+
     const clearSearchDots = () => {
       if (searchDotsTimer != null) {
         clearInterval(searchDotsTimer);
@@ -277,9 +285,9 @@
       clearSearchDots();
       let index = 0;
       const frames = ["Searching.", "Searching..", "Searching..."];
-      serverFinderResult.textContent = frames[0];
+      setServerFinderResult(frames[0]);
       searchDotsTimer = setInterval(() => {
-        serverFinderResult.textContent = frames[index = (index + 1) % frames.length];
+        setServerFinderResult(frames[index = (index + 1) % frames.length]);
       }, 400);
     };
 
@@ -360,7 +368,7 @@
       serverFinderModal.classList.add("open");
       serverFinderModal.setAttribute("aria-hidden", "false");
       document.body.classList.add("modal-open");
-      serverFinderResult.textContent = "";
+      setServerFinderResult("");
       resetCaptcha();
       if (discordUser) loadPremium();
       serverFinderUserId.focus();
@@ -377,17 +385,17 @@
       if (!isPremium || serverFinderSearch.disabled) return;
       const userId = serverFinderUserId.value.trim();
       if (!userId) {
-        serverFinderResult.textContent = "Enter user ID.";
+        setServerFinderResult("Enter user ID.");
         return;
       }
       if (!serverFinderCaptchaToken) {
-        serverFinderResult.textContent = "Complete captcha.";
+        setServerFinderResult("Complete captcha.");
         resetCaptcha();
         return;
       }
       const discord = getCookie("discord_token");
       if (!discord) {
-        serverFinderResult.textContent = "Log in to search.";
+        setServerFinderResult("Log in to search.");
         return;
       }
       startSearchDots();
@@ -402,7 +410,7 @@
         if (!response.ok) {
           clearSearchDots();
           const err = await response.json().catch(() => ({}));
-          serverFinderResult.textContent = err?.error === "Premium" ? "Premium only." : err?.error === "Unauthorized" ? "Unauthorized." : err?.error === "Recaptcha" ? "Complete captcha." : "Search failed.";
+          setServerFinderResult(err?.error === "Premium" ? "Premium only." : err?.error === "Unauthorized" ? "Unauthorized." : err?.error === "Recaptcha" ? "Complete captcha." : "Search failed.");
           resetCaptcha();
           return;
         }
@@ -419,14 +427,14 @@
             const trackJson = await trackResponse.json();
             if (trackJson?.count != null) setServerFinderCount(trackJson.count);
           }
-          serverFinderResult.textContent = `Server: ${json.serverName} | Realm: ${json.realmName}`;
+          setServerFinderResult(`Server: ${json.serverName} | Realm: ${json.realmName}`);
           return;
         }
-        serverFinderResult.textContent = "Not found.";
+        setServerFinderResult("Not found.");
       } catch {
         clearSearchDots();
         resetCaptcha();
-        serverFinderResult.textContent = "Search failed.";
+        setServerFinderResult("Search failed.");
       }
     };
 
@@ -496,6 +504,7 @@
     serverFinderClose.onclick = closeServerFinder;
     serverFinderSearch.onclick = searchServerFinder;
     serverFinderCaptchaTrigger.onclick = () => { if (window.grecaptcha) return; };
+    serverFinderUserId.oninput = () => setSearchEnabled(!!serverFinderCaptchaToken);
     serverFinderUserId.onkeydown = (event) => { if (event.key === "Enter") searchServerFinder(); };
 
     const profileOpen = document.getElementById("profile-open");

@@ -595,15 +595,42 @@ button.nav-btn { appearance: none; font: inherit; }
 .server-finder-input { margin-bottom: 14px; }
 .server-finder-search { width: 100%; }
 
+.server-finder-footer {
+  margin: 14px 0 0;
+}
+
+.server-finder-footer .modal-meta {
+  margin: 0;
+}
+
+.server-finder-footer .modal-meta:empty {
+  display: none;
+}
+
+.server-finder-footer--result {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .server-finder-sponsor {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  margin: 14px 0 0;
+  margin: 0;
   font-size: 11px;
   line-height: 1;
   color: #7a8aa8;
+  text-decoration: none;
+}
+
+.server-finder-footer--result .server-finder-sponsor {
+  justify-content: flex-start;
+}
+
+.server-finder-footer--result .server-finder-sponsor__text {
+  display: none;
 }
 
 .server-finder-sponsor img {
@@ -613,13 +640,12 @@ button.nav-btn { appearance: none; font: inherit; }
   object-fit: cover;
 }
 
-.server-finder-sponsor a {
-  color: #8eb6ff;
-  text-decoration: none;
+.server-finder-sponsor__text {
+  color: inherit;
 }
 
-.server-finder-sponsor a:hover {
-  color: #b6d0ff;
+.server-finder-sponsor:hover .server-finder-sponsor__text {
+  color: #8eb6ff;
   text-decoration: underline;
 }
 
