@@ -48,6 +48,7 @@
           <div class="profile-dropdown" id="profile-dropdown">
             <button type="button" class="profile-dropdown__item" id="profile-login">Log in</button>
             <button type="button" class="profile-dropdown__item" id="profile-premium" hidden>Buy premium</button>
+            <button type="button" class="profile-dropdown__item" id="profile-billing" hidden>Manage billing</button>
             <button type="button" class="profile-dropdown__item" id="profile-logout" hidden>Log out</button>
           </div>
         </div>
@@ -497,6 +498,7 @@
     const profileMenu = profileOpen.closest(".profile-menu");
     const profileLogin = document.getElementById("profile-login");
     const profilePremium = document.getElementById("profile-premium");
+    const profileBilling = document.getElementById("profile-billing");
     const profileLogout = document.getElementById("profile-logout");
     const profileIcon = document.getElementById("profile-icon");
     const profileIconSvg = profileIcon.innerHTML;
@@ -524,6 +526,7 @@
       isPremium = false;
       profileLogin.hidden = false;
       profilePremium.hidden = true;
+      profileBilling.hidden = true;
       profileLogout.hidden = true;
       profileIcon.innerHTML = profileIconSvg;
       profileIcon.classList.remove("nav-btn__icon--avatar");
@@ -533,6 +536,7 @@
       discordUser = user;
       profileLogin.hidden = true;
       profilePremium.hidden = !!isPremium;
+      profileBilling.hidden = !isPremium;
       profileLogout.hidden = false;
       profileIcon.classList.add("nav-btn__icon--avatar");
       profileIcon.innerHTML = "<img src=\"" + discordAvatarUrl(user) + "\" alt=\"\">";
@@ -548,6 +552,7 @@
         .then((data) => {
           isPremium = !!data.premium;
           profilePremium.hidden = isPremium;
+          profileBilling.hidden = !isPremium;
           setSearchEnabled(!!serverFinderCaptchaToken);
         })
         .catch(() => {});
@@ -585,6 +590,14 @@
     };
     profilePremium.onclick = () => {
       fetch("/stripe/checkout", { method: "POST" })
+        .then((response) => response.json())
+        .then((data) => {
+          if (data.url) location.href = data.url;
+        });
+      closeProfileDropdown();
+    };
+    profileBilling.onclick = () => {
+      fetch("/stripe/portal", { method: "POST" })
         .then((response) => response.json())
         .then((data) => {
           if (data.url) location.href = data.url;

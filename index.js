@@ -142,6 +142,28 @@ async function stripeCheckout(request, env) {
     return json({ url: session.url });
 }
 
+async function stripePortal(request, env) {
+    const token = cookie(request, "discord_token");
+    const user = token ? await discordUser(token) : null;
+    if (!user) return json({ error: "login" }, 401);
+    const row = await env.DB.prepare("SELECT stripe_customer FROM users WHERE id = ?").bind(user.id).first();
+    if (!row || !row.stripe_customer) return json({ error: "no customer" }, 400);
+    const data = new URLSearchParams({
+        customer: row.stripe_customer,
+        return_url: "https://binwoken.sh/",
+    });
+    const response = await fetch("https://api.stripe.com/v1/billing_portal/sessions", {
+        method: "POST",
+        headers: {
+            Authorization: "Bearer " + env.STRIPE_SECRET,
+            "Content-Type": "application/x-www-form-urlencoded",
+        },
+        body: data,
+    });
+    const session = await response.json();
+    return json({ url: session.url });
+}
+
 function hexToBytes(hex) {
     const out = new Uint8Array(hex.length / 2);
     for (let i = 0; i < out.length; i++) out[i] = parseInt(hex.slice(i * 2, i * 2 + 2), 16);
@@ -238,6 +260,7 @@ export default {
         if (path === "/auth/me" && request.method === "POST") return authMe(request, env);
         if (path === "/auth/ip" && request.method === "GET") return authIp(request);
         if (path === "/stripe/checkout" && request.method === "POST") return stripeCheckout(request, env);
+        if (path === "/stripe/portal" && request.method === "POST") return stripePortal(request, env);
         if (path === "/stripe/webhook" && request.method === "POST") return stripeWebhook(request, env);
         const routes = {
             "/public/counts": count,
