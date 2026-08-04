@@ -1,7 +1,7 @@
 import { json } from "./js/util.js";
 import { authLogin, authPage, authMe, authIp } from "./js/auth.js";
 import { stripeCheckout, stripePortal, stripeWebhook } from "./js/stripe.js";
-import { dashboardWatch, dashboardGet, dashboardSave, dashboardRemove } from "./js/dashboard.js";
+import { addUser, saveSettings, removeUser } from "./js/dashboard.js";
 
 async function count(_request, env) {
     const { results } = await env.DB.prepare(
@@ -38,10 +38,9 @@ export default {
         if (path === "/stripe/checkout" && request.method === "POST") return stripeCheckout(request, env);
         if (path === "/stripe/portal" && request.method === "POST") return stripePortal(request, env);
         if (path === "/stripe/webhook" && request.method === "POST") return stripeWebhook(request, env);
-        if (path === "/dashboard/watch" && request.method === "POST") return dashboardWatch(request, env);
-        if (path === "/dashboard/remove" && request.method === "POST") return dashboardRemove(request, env);
-        if (path === "/dashboard" && request.method === "GET") return dashboardGet(request, env);
-        if (path === "/dashboard" && request.method === "POST") return dashboardSave(request, env);
+        if (path === "/settings/add" && request.method === "POST") return addUser(request, env);
+        if (path === "/settings/remove" && request.method === "POST") return removeUser(request, env);
+        if (path === "/settings" && request.method === "POST") return saveSettings(request, env);
         const routes = {
             "/public/counts": count,
             "/public/track": track,

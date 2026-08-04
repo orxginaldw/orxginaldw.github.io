@@ -1,17 +1,7 @@
-import { json, cookie, ensureUsers } from "./util.js";
-import { discordUser } from "./discord.js";
+import { json } from "./util.js";
+import { authMe } from "./auth.js";
 
-async function premiumUser(request, env) {
-    const token = cookie(request, "discord_token");
-    const user = token ? await discordUser(token) : null;
-    if (!user) return { error: json({ error: "Unauthorized" }, 401) };
-    await ensureUsers(env);
-    const row = await env.DB.prepare("SELECT id, webhook, watches FROM users WHERE id = ?").bind(user.id).first();
-    if (!row) return { error: json({ error: "Premium" }, 403) };
-    return { user, row };
-}
-
-async function robloxUser(id) {
+async function getUser(id) {
     const [infoRes, thumbRes] = await Promise.all([
         fetch("https://users.roblox.com/v1/users/" + id),
         fetch(
@@ -30,20 +20,15 @@ async function robloxUser(id) {
     };
 }
 
-function parseWatches(raw) {
-    const list = raw ? JSON.parse(raw) : [];
-    return Array.isArray(list) ? list.slice(0, 10) : [];
-}
-
-async function cachedWatch(env, id) {
-    const rows = await env.DB.prepare("SELECT watches FROM users WHERE IFNULL(watches, '') NOT IN ('', '[]')").all();
+async function getCache(env, id) {
+    const rows = await env.DB.prepare("SELECT users FROM users WHERE IFNULL(users, '') NOT IN ('', '[]')").all();
     for (const row of rows.results || []) {
-        for (const watch of parseWatches(row.watches)) {
-            if (String(watch.id) === id && watch.thumbnail) {
+        for (const user of JSON.parse(row.users)) {
+            if (String(user.id) === id && user.thumbnail) {
                 return {
                     id,
-                    username: watch.username || id,
-                    thumbnail: watch.thumbnail,
+                    username: user.username || id,
+                    thumbnail: user.thumbnail,
                 };
             }
         }
@@ -51,13 +36,12 @@ async function cachedWatch(env, id) {
     return null;
 }
 
-export async function dashboardWatch(request, env) {
-    const gate = await premiumUser(request, env);
-    if (gate.error) return gate.error;
+export async function addUser(request, env) {
+    await authMe(request, env);
     const { userId } = await request.json();
     const id = String(userId || "").trim();
-    const cached = await cachedWatch(env, id);
-    const fresh = cached || (await robloxUser(id));
+    const cached = await getCache(env, id);
+    const fresh = cached || (await getUser(id));
     if (!fresh) return json({ error: "Invalid" }, 404);
     const now = Math.floor(Date.now() / 1000);
     return json({
@@ -69,30 +53,19 @@ export async function dashboardWatch(request, env) {
     });
 }
 
-export async function dashboardGet(request, env) {
-    const gate = await premiumUser(request, env);
-    if (gate.error) return gate.error;
-    return json({
-        webhook: gate.row.webhook || "",
-        watches: parseWatches(gate.row.watches),
-    });
-}
-
-export async function dashboardRemove(request, env) {
-    const gate = await premiumUser(request, env);
-    if (gate.error) return gate.error;
+export async function removeUser(request, env) {
+    const me = await (await authMe(request, env)).json();
     const { userId } = await request.json();
     const id = String(userId || "").trim();
-    const watches = parseWatches(gate.row.watches).filter((watch) => String(watch.id) !== id);
-    await env.DB.prepare("UPDATE users SET watches = ? WHERE id = ?")
-        .bind(JSON.stringify(watches), gate.user.id)
+    const users = me.users.filter((user) => String(user.id) !== id);
+    await env.DB.prepare("UPDATE users SET users = ? WHERE id = ?")
+        .bind(JSON.stringify(users), me.id)
         .run();
-    return json({ ok: true, watches });
+    return json({ ok: true, users });
 }
 
-export async function dashboardSave(request, env) {
-    const gate = await premiumUser(request, env);
-    if (gate.error) return gate.error;
+export async function saveSettings(request, env) {
+    const me = await (await authMe(request, env)).json();
     const body = await request.json();
     const captcha = await fetch("https://www.google.com/recaptcha/api/siteverify", {
         method: "POST",
@@ -106,32 +79,32 @@ export async function dashboardSave(request, env) {
     const webhook = String(body.webhook || "").trim();
     const now = Math.floor(Date.now() / 1000);
     const existing = {};
-    for (const watch of parseWatches(gate.row.watches)) existing[String(watch.id)] = watch;
-    const watches = [];
-    for (const item of (Array.isArray(body.watches) ? body.watches : []).slice(0, 10)) {
+    for (const user of me.users) existing[String(user.id)] = user;
+    const users = [];
+    for (const item of body.users.slice(0, 10)) {
         const id = String(item.id || "").trim();
         if (!id) continue;
-        const prev = existing[id];
-        let username = item.username || (prev && prev.username) || "";
-        let thumbnail = item.thumbnail || (prev && prev.thumbnail) || "";
-        let refreshed = Number(item.refreshed) || Number(prev && prev.refreshed) || now;
+        const previous = existing[id];
+        let username = item.username || (previous && previous.username) || "";
+        let thumbnail = item.thumbnail || (previous && previous.thumbnail) || "";
+        let refreshed = Number(item.refreshed) || Number(previous && previous.refreshed) || now;
         if (!username || !thumbnail) {
-            const fresh = (await cachedWatch(env, id)) || (await robloxUser(id));
+            const fresh = (await getCache(env, id)) || (await getUser(id));
             if (!fresh) continue;
             username = fresh.username;
             thumbnail = fresh.thumbnail;
             refreshed = now;
         }
-        watches.push({
+        users.push({
             id,
             username,
             thumbnail,
-            added: Number(item.added) || Number(prev && prev.added) || now,
+            added: Number(item.added) || Number(previous && previous.added) || now,
             refreshed,
         });
     }
-    await env.DB.prepare("UPDATE users SET webhook = ?, watches = ? WHERE id = ?")
-        .bind(webhook, JSON.stringify(watches), gate.user.id)
+    await env.DB.prepare("UPDATE users SET webhook = ?, users = ? WHERE id = ?")
+        .bind(webhook, JSON.stringify(users), me.id)
         .run();
-    return json({ ok: true, webhook, watches });
+    return json({ ok: true, webhook, users });
 }

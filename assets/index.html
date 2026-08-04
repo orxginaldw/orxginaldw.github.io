@@ -567,7 +567,7 @@
     let dashboardCaptchaToken = "";
     let dashboardSavedWebhook = "";
     let dashboardSavedWatchIds = "";
-    const dashboardWatchIdsKey = (watches) => watches.map((watch) => String(watch.id)).slice().sort().join(",");
+    const dashboardWatchIdsKey = (users) => users.map((user) => String(user.id)).slice().sort().join(",");
     const dashboardDirty = () =>
       dashboardWebhook.value.trim() !== dashboardSavedWebhook ||
       dashboardWatchIdsKey(dashboardWatches) !== dashboardSavedWatchIds;
@@ -646,7 +646,7 @@
           const removeId = watch.id;
           dashboardWatches = dashboardWatches.filter((x) => x.id !== removeId);
           renderDashboardWatches();
-          fetch("/dashboard/remove", {
+          fetch("/settings/remove", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ userId: removeId }),
@@ -657,7 +657,7 @@
                 dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : "Could not remove.";
                 return;
               }
-              dashboardWatches = Array.isArray(data.watches) ? data.watches : dashboardWatches;
+              dashboardWatches = Array.isArray(data.users) ? data.users : dashboardWatches;
               renderDashboardWatches();
               rememberDashboardSaved();
               updateDashboardSaveEnabled();
@@ -677,7 +677,7 @@
       dashboardModal.classList.add("open");
       dashboardModal.setAttribute("aria-hidden", "false");
       document.body.classList.add("modal-open");
-      fetch("/dashboard")
+      fetch("/auth/me", { method: "POST" })
         .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
         .then(({ ok, data }) => {
           if (!ok) {
@@ -685,7 +685,7 @@
             return;
           }
           dashboardWebhook.value = data.webhook || "";
-          dashboardWatches = Array.isArray(data.watches) ? data.watches : [];
+          dashboardWatches = Array.isArray(data.users) ? data.users : [];
           renderDashboardWatches();
           rememberDashboardSaved();
           updateDashboardSaveEnabled();
@@ -799,7 +799,7 @@
       }
       dashboardWatchAdd.disabled = true;
       dashboardStatus.textContent = "";
-      fetch("/dashboard/watch", {
+      fetch("/settings/add", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ userId: id }),
@@ -840,10 +840,10 @@
       }
       dashboardSave.disabled = true;
       dashboardStatus.textContent = "";
-      fetch("/dashboard", {
+      fetch("/settings", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ webhook: dashboardWebhook.value.trim(), watches: dashboardWatches, token: dashboardCaptchaToken }),
+        body: JSON.stringify({ webhook: dashboardWebhook.value.trim(), users: dashboardWatches, token: dashboardCaptchaToken }),
       })
         .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
         .then(({ ok, data }) => {
@@ -852,7 +852,7 @@
             resetDashboardCaptcha();
             return;
           }
-          dashboardWatches = Array.isArray(data.watches) ? data.watches : dashboardWatches;
+          dashboardWatches = Array.isArray(data.users) ? data.users : dashboardWatches;
           renderDashboardWatches();
           rememberDashboardSaved();
           dashboardStatus.textContent = "Saved.";
