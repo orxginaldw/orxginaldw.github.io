@@ -526,6 +526,8 @@ button.nav-btn { appearance: none; font: inherit; }
   flex-direction: column;
   gap: 6px;
   min-height: 0;
+  max-height: 180px;
+  overflow-y: auto;
 }
 
 .dashboard-watch-list:empty {
