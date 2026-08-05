@@ -621,6 +621,7 @@ button.nav-btn { appearance: none; font: inherit; }
   border-radius: 12px;
   background: linear-gradient(180deg, #151d2f, #101624);
   box-shadow: 0 26px 84px rgba(0, 0, 0, .58);
+  animation: modalIn .28s cubic-bezier(.2, .8, .2, 1) both;
 }
 
 .dashboard-accuracy-panel-title {
