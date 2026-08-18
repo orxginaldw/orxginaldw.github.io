@@ -48,6 +48,7 @@
           <div class="profile-dropdown" id="profile-dropdown">
             <button type="button" class="profile-dropdown__item" id="profile-login">Log in</button>
             <button type="button" class="profile-dropdown__item" id="profile-premium" hidden>Buy premium</button>
+            <button type="button" class="profile-dropdown__item" id="profile-api-key" hidden>API key</button>
             <button type="button" class="profile-dropdown__item" id="profile-dashboard" hidden>Dashboard</button>
             <button type="button" class="profile-dropdown__item" id="profile-billing" hidden>Manage billing</button>
             <button type="button" class="profile-dropdown__item" id="profile-logout" hidden>Log out</button>
@@ -139,12 +140,6 @@
       <p class="modal-meta">Get Discord alerts when watched players show up in servers.</p>
       <label class="server-finder-label" for="dashboard-webhook">Discord webhook URL</label>
       <input class="search server-finder-input" id="dashboard-webhook" type="url" placeholder="https://discord.com/api/webhooks/..." autocomplete="off">
-      <label class="server-finder-label" for="dashboard-api-key">API key</label>
-      <div class="dashboard-watch-add">
-        <input class="search server-finder-input" id="dashboard-api-key" type="text" readonly placeholder="Click Generate" autocomplete="off">
-        <button type="button" class="btn dashboard-api-generate" id="dashboard-api-generate">Generate</button>
-        <button type="button" class="btn dashboard-api-generate" id="dashboard-api-copy">Copy</button>
-      </div>
       <label class="server-finder-label" for="dashboard-watch-id">Roblox User IDs <span class="dashboard-watch-count" id="dashboard-watch-count">0 / 10</span></label>
       <div class="dashboard-watch-add">
         <input class="search server-finder-input" id="dashboard-watch-id" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -199,9 +194,28 @@
     </div>
   </div>
 
+  <div id="api-key-modal" class="modal" aria-hidden="true">
+    <div id="api-key-backdrop" class="backdrop"></div>
+    <div class="panel" role="dialog" aria-modal="true" aria-labelledby="api-key-title">
+      <button id="api-key-close" class="modal-close" type="button" aria-label="Close">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
+      </button>
+      <div class="kicker">Binwoken</div>
+      <h2 id="api-key-title" class="modal-title">API key</h2>
+      <p id="api-key-hint" class="modal-meta">Paste this into Binwoken.exe when it asks.</p>
+      <div id="api-key-row" class="dashboard-watch-add" hidden>
+        <input class="search server-finder-input" id="api-key-value" type="text" readonly placeholder="Click Generate" autocomplete="off">
+        <button type="button" class="btn dashboard-api-generate" id="api-key-generate">Generate</button>
+        <button type="button" class="btn dashboard-api-generate" id="api-key-copy">Copy</button>
+      </div>
+      <button type="button" class="btn" id="api-key-action" hidden></button>
+      <p id="api-key-status" class="modal-meta"></p>
+    </div>
+  </div>
+
   <script>
     const files = [
-      {trackId:"binwoken",type:"exe",title:"Binwoken.exe",creator:"orxginaldw",added:"Aug 18th, 2026",description:"Restores the old Deepwoken server list so you can see and join every server. After the Chaos update the in-game list hides or buries a lot of servers based on your PvP score. API key required, premium users can generate a key in dashboard.",downloadUrl:"https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/downloads/Binwoken.exe",downloadName:"Binwoken.exe",previewImage:"images/binwoken.png"},
+      {trackId:"binwoken",type:"exe",title:"Binwoken.exe",creator:"orxginaldw",added:"Aug 18th, 2026",description:"Restores the old Deepwoken server list so you can see and join every server. After the Chaos update the in-game list hides or buries a lot of servers based on your PvP score. API key required — generate it from your profile (premium).",downloadUrl:"https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/downloads/Binwoken.exe",downloadName:"Binwoken.exe",previewImage:"images/binwoken.png"},
       {trackId:"e_girl",type:"exe",title:"e-girl.exe",creator:"orxginaldw",added:"Aug 8th, 2026",description:"Tinder-style swipe app to find Deepwoken e-girls. This works by scanning user bio's for matching keywords in server lists. May require <a href='https://developer.microsoft.com/en-us/microsoft-edge/webview2/' target='_blank' rel='noreferrer'>WebView2</a> if it fails to open.",downloadUrl:"https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/downloads/e-girl.exe",downloadName:"e-girl.exe",previewImage:"images/egirl.png"},
       {trackId:"the_fml_macro",type:"exe",title:"The FML Macro",creator:"lordbelioo",added:"Jul 24th, 2026",description:"Python macro by kodak with Better Swingspeed, Always Feint, Auto Mantra Feint, and Auto Uppercut.",downloadUrl:"https://github.com/orxginaldw/orxginaldw.github.io/raw/refs/heads/main/downloads/the_fml_macro.exe",downloadName:"the_fml_macro.exe",previewImage:"images/thefmlmacro.png"},
       {trackId:"the_fml_macro_decompiled",type:"py",title:"The FML Macro Decompiled",creator:"orxginaldw",added:"Jul 24th, 2026",description:"Source code for The FML Macro.",downloadUrl:"https://raw.githubusercontent.com/orxginaldw/orxginaldw.github.io/refs/heads/main/downloads/the_fml_macro_decompiled.py",downloadName:"the_fml_macro_decompiled.py",previewImage:"images/thefmlmacro.png"},
@@ -261,6 +275,7 @@
     let isPremium = false;
     let hasBilling = false;
     let discordUser = null;
+    let hopperKey = "";
     const serverFinderLock = document.getElementById("server-finder-lock");
 
     const setSearchEnabled = (enabled) => {
@@ -587,6 +602,7 @@
     const profileMenu = profileOpen.closest(".profile-menu");
     const profileLogin = document.getElementById("profile-login");
     const profilePremium = document.getElementById("profile-premium");
+    const profileApiKey = document.getElementById("profile-api-key");
     const profileDashboard = document.getElementById("profile-dashboard");
     const profileBilling = document.getElementById("profile-billing");
     const profileLogout = document.getElementById("profile-logout");
@@ -596,9 +612,16 @@
     const dashboardBackdrop = document.getElementById("dashboard-backdrop");
     const dashboardClose = document.getElementById("dashboard-close");
     const dashboardWebhook = document.getElementById("dashboard-webhook");
-    const dashboardApiKey = document.getElementById("dashboard-api-key");
-    const dashboardApiGenerate = document.getElementById("dashboard-api-generate");
-    const dashboardApiCopy = document.getElementById("dashboard-api-copy");
+    const apiKeyModal = document.getElementById("api-key-modal");
+    const apiKeyBackdrop = document.getElementById("api-key-backdrop");
+    const apiKeyClose = document.getElementById("api-key-close");
+    const apiKeyHint = document.getElementById("api-key-hint");
+    const apiKeyRow = document.getElementById("api-key-row");
+    const apiKeyValue = document.getElementById("api-key-value");
+    const apiKeyGenerate = document.getElementById("api-key-generate");
+    const apiKeyCopy = document.getElementById("api-key-copy");
+    const apiKeyAction = document.getElementById("api-key-action");
+    const apiKeyStatus = document.getElementById("api-key-status");
     const dashboardWatchId = document.getElementById("dashboard-watch-id");
     const dashboardWatchAdd = document.getElementById("dashboard-watch-add");
     const dashboardWatchList = document.getElementById("dashboard-watch-list");
@@ -755,7 +778,6 @@
             return;
           }
           dashboardWebhook.value = data.webhook || "";
-          dashboardApiKey.value = data.key || "";
           dashboardWatches = Array.isArray(data.users) ? data.users : [];
           renderDashboardWatches();
           rememberDashboardSaved();
@@ -771,6 +793,52 @@
       dashboardModal.setAttribute("aria-hidden", "true");
       document.body.classList.remove("modal-open");
     };
+    const syncApiKeyPanel = () => {
+      apiKeyStatus.textContent = "";
+      if (!discordUser) {
+        apiKeyHint.textContent = "Log in with Discord, then buy premium to get a hopper key.";
+        apiKeyRow.hidden = true;
+        apiKeyAction.hidden = false;
+        apiKeyAction.textContent = "Log in with Discord";
+        return;
+      }
+      if (!isPremium) {
+        apiKeyHint.textContent = "Hopper keys are premium. Buy it, then generate a key here.";
+        apiKeyRow.hidden = true;
+        apiKeyAction.hidden = false;
+        apiKeyAction.textContent = "Buy premium";
+        return;
+      }
+      apiKeyHint.textContent = "Paste this into Binwoken.exe when it asks.";
+      apiKeyRow.hidden = false;
+      apiKeyAction.hidden = true;
+      apiKeyValue.value = hopperKey;
+    };
+    const openApiKey = () => {
+      syncApiKeyPanel();
+      apiKeyModal.classList.add("open");
+      apiKeyModal.setAttribute("aria-hidden", "false");
+      document.body.classList.add("modal-open");
+      if (!discordUser || !isPremium) return;
+      fetch("/auth/me", { method: "POST" })
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            apiKeyStatus.textContent = data?.error === "Premium" ? "Premium only." : "Could not load key.";
+            return;
+          }
+          hopperKey = data.key || "";
+          apiKeyValue.value = hopperKey;
+        })
+        .catch(() => {
+          apiKeyStatus.textContent = "Could not load key.";
+        });
+    };
+    const closeApiKey = () => {
+      apiKeyModal.classList.remove("open");
+      apiKeyModal.setAttribute("aria-hidden", "true");
+      document.body.classList.remove("modal-open");
+    };
     const setLoggedOut = () => {
       clearCookie("discord_token");
       discordUser = null;
@@ -778,6 +846,7 @@
       hasBilling = false;
       profileLogin.hidden = false;
       profilePremium.hidden = true;
+      profileApiKey.hidden = true;
       profileDashboard.hidden = true;
       profileBilling.hidden = true;
       profileLogout.hidden = true;
@@ -789,6 +858,7 @@
       discordUser = user;
       profileLogin.hidden = true;
       profilePremium.hidden = !!isPremium;
+      profileApiKey.hidden = false;
       profileDashboard.hidden = !isPremium;
       profileBilling.hidden = !hasBilling;
       profileLogout.hidden = false;
@@ -805,6 +875,7 @@
           profilePremium.hidden = isPremium;
           profileDashboard.hidden = !isPremium;
           profileBilling.hidden = !hasBilling;
+          hopperKey = data.key || hopperKey;
           setSearchEnabled(!!serverFinderCaptchaToken);
         })
         .catch(() => {});
@@ -844,6 +915,10 @@
         });
       closeProfileDropdown();
     };
+    profileApiKey.onclick = () => {
+      closeProfileDropdown();
+      openApiKey();
+    };
     profileDashboard.onclick = () => {
       closeProfileDropdown();
       openDashboard();
@@ -857,9 +932,53 @@
       closeProfileDropdown();
     };
     profileLogout.onclick = () => {
+      hopperKey = "";
+      apiKeyValue.value = "";
       setLoggedOut();
       closeProfileDropdown();
     };
+    apiKeyAction.onclick = () => {
+      if (!discordUser) {
+        location.href = "/auth/login";
+        return;
+      }
+      if (!isPremium) {
+        fetch("/stripe/checkout", { method: "POST" })
+          .then((response) => response.json())
+          .then((data) => {
+            if (data.url) location.href = data.url;
+          });
+      }
+    };
+    apiKeyGenerate.onclick = () => {
+      apiKeyGenerate.disabled = true;
+      apiKeyStatus.textContent = "";
+      fetch("/settings/key", { method: "POST" })
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            apiKeyStatus.textContent = data?.error === "Premium" ? "Premium only." : "Could not generate key.";
+            return;
+          }
+          hopperKey = data.key || "";
+          apiKeyValue.value = hopperKey;
+          apiKeyValue.select();
+          apiKeyStatus.textContent = "Key generated.";
+        })
+        .catch(() => {
+          apiKeyStatus.textContent = "Could not generate key.";
+        })
+        .finally(() => {
+          apiKeyGenerate.disabled = false;
+        });
+    };
+    apiKeyCopy.onclick = () => {
+      if (!apiKeyValue.value) return;
+      navigator.clipboard.writeText(apiKeyValue.value);
+      apiKeyStatus.textContent = "Copied.";
+    };
+    apiKeyClose.onclick = closeApiKey;
+    apiKeyBackdrop.onclick = closeApiKey;
     dashboardWatchAdd.onclick = () => {
       const id = dashboardWatchId.value.trim();
       if (!id || dashboardWatches.some((x) => x.id === id) || dashboardWatches.length >= 10) return;
@@ -900,31 +1019,6 @@
       }
     };
     dashboardWebhook.oninput = updateDashboardSaveEnabled;
-    dashboardApiGenerate.onclick = () => {
-      dashboardApiGenerate.disabled = true;
-      dashboardStatus.textContent = "";
-      fetch("/settings/key", { method: "POST" })
-        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
-        .then(({ ok, data }) => {
-          if (!ok) {
-            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : "Could not generate key.";
-            return;
-          }
-          dashboardApiKey.value = data.key || "";
-          dashboardApiKey.select();
-          dashboardStatus.textContent = "API key generated.";
-        })
-        .catch(() => {
-          dashboardStatus.textContent = "Could not generate key.";
-        })
-        .finally(() => {
-          dashboardApiGenerate.disabled = false;
-        });
-    };
-    dashboardApiCopy.onclick = () => {
-      navigator.clipboard.writeText(dashboardApiKey.value);
-      dashboardStatus.textContent = "Copied.";
-    };
     dashboardSave.onclick = () => {
       if (!dashboardCaptchaToken) {
         dashboardStatus.textContent = "Complete captcha.";
@@ -974,6 +1068,7 @@
     document.onkeydown = (event) => {
       if (event.key !== "Escape") return;
       if (profileDropdown.classList.contains("open")) closeProfileDropdown();
+      else if (apiKeyModal.classList.contains("open")) closeApiKey();
       else if (dashboardModal.classList.contains("open")) closeDashboard();
       else if (serverFinderModal.classList.contains("open")) closeServerFinder();
       else if (modal.classList.contains("open")) closeModal();

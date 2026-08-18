@@ -779,7 +779,8 @@ button.nav-btn { appearance: none; font: inherit; }
   border-radius: 7px;
 }
 
-#dashboard-modal .btn.dashboard-api-generate {
+#dashboard-modal .btn.dashboard-api-generate,
+#api-key-modal .btn.dashboard-api-generate {
   width: auto;
   min-width: 0;
   max-width: none;
@@ -787,6 +788,18 @@ button.nav-btn { appearance: none; font: inherit; }
   padding: 8px 12px;
   font-size: 13px;
 }
+
+#api-key-modal .panel { width: min(480px, 100%); }
+#api-key-modal .btn {
+  width: 100%;
+  margin-top: 0;
+  border: 1px solid #4a6eaf;
+  background: linear-gradient(180deg, #3a5690, #2d4474);
+  box-shadow: none;
+}
+#api-key-modal .btn::before { display: none; }
+#api-key-modal .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); border-color: #5f84cb; box-shadow: none; }
+#api-key-modal .search { padding: 11px 12px; font-size: 14px; }
 
 #modal .backdrop { background: rgba(2, 4, 9, .8); backdrop-filter: blur(6px); opacity: 0; }
 #modal.open .backdrop { animation: fadeIn .28s ease forwards; }
