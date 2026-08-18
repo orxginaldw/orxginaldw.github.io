@@ -48,9 +48,9 @@
           <div class="profile-dropdown" id="profile-dropdown">
             <button type="button" class="profile-dropdown__item" id="profile-login">Log in</button>
             <button type="button" class="profile-dropdown__item" id="profile-premium" hidden>Buy premium</button>
-            <button type="button" class="profile-dropdown__item" id="profile-api-key" hidden>API key</button>
             <button type="button" class="profile-dropdown__item" id="profile-dashboard" hidden>Dashboard</button>
             <button type="button" class="profile-dropdown__item" id="profile-billing" hidden>Manage billing</button>
+            <button type="button" class="profile-dropdown__item" id="profile-api-key" hidden>API key</button>
             <button type="button" class="profile-dropdown__item" id="profile-logout" hidden>Log out</button>
           </div>
         </div>
@@ -200,9 +200,9 @@
       <button id="api-key-close" class="modal-close" type="button" aria-label="Close">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6L18 18M18 6L6 18"/></svg>
       </button>
-      <div class="kicker">Binwoken</div>
+      <div class="kicker">Account</div>
       <h2 id="api-key-title" class="modal-title">API key</h2>
-      <p id="api-key-hint" class="modal-meta">Paste this into Binwoken.exe when it asks.</p>
+      <p id="api-key-hint" class="modal-meta" hidden></p>
       <div id="api-key-row" class="dashboard-watch-add" hidden>
         <input class="search server-finder-input" id="api-key-value" type="text" readonly placeholder="Click Generate" autocomplete="off">
         <button type="button" class="btn dashboard-api-generate" id="api-key-generate">Generate</button>
@@ -796,20 +796,23 @@
     const syncApiKeyPanel = () => {
       apiKeyStatus.textContent = "";
       if (!discordUser) {
-        apiKeyHint.textContent = "Log in with Discord, then buy premium to get a hopper key.";
+        apiKeyHint.hidden = false;
+        apiKeyHint.textContent = "Log in with Discord, then buy premium to get a key.";
         apiKeyRow.hidden = true;
         apiKeyAction.hidden = false;
         apiKeyAction.textContent = "Log in with Discord";
         return;
       }
       if (!isPremium) {
-        apiKeyHint.textContent = "Hopper keys are premium. Buy it, then generate a key here.";
+        apiKeyHint.hidden = false;
+        apiKeyHint.textContent = "API keys are premium. Buy it, then generate a key here.";
         apiKeyRow.hidden = true;
         apiKeyAction.hidden = false;
         apiKeyAction.textContent = "Buy premium";
         return;
       }
-      apiKeyHint.textContent = "Paste this into Binwoken.exe when it asks.";
+      apiKeyHint.hidden = true;
+      apiKeyHint.textContent = "";
       apiKeyRow.hidden = false;
       apiKeyAction.hidden = true;
       apiKeyValue.value = hopperKey;
