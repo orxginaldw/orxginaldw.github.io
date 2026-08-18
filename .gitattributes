@@ -1,3 +1,4 @@
 downloads/Merostrap1.6.4.zip filter=lfs diff=lfs merge=lfs -text
 downloads/HamsternalPatch.zip filter=lfs diff=lfs merge=lfs -text
 downloads/e-girl.exe filter=lfs diff=lfs merge=lfs -text
+downloads/Binwoken.exe filter=lfs diff=lfs merge=lfs -text
