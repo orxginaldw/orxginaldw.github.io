@@ -108,3 +108,10 @@ export async function saveSettings(request, env) {
         .run();
     return json({ ok: true, webhook, users });
 }
+
+export async function generateKey(request, env) {
+    const me = await (await authMe(request, env)).json();
+    const key = [...crypto.getRandomValues(new Uint8Array(40))].map((b) => b.toString(16).padStart(2, "0")).join("");
+    await env.DB.prepare("UPDATE users SET key = ? WHERE id = ?").bind(key, me.id).run();
+    return json({ key });
+}

@@ -139,6 +139,12 @@
       <p class="modal-meta">Get Discord alerts when watched players show up in servers.</p>
       <label class="server-finder-label" for="dashboard-webhook">Discord webhook URL</label>
       <input class="search server-finder-input" id="dashboard-webhook" type="url" placeholder="https://discord.com/api/webhooks/..." autocomplete="off">
+      <label class="server-finder-label" for="dashboard-api-key">API key</label>
+      <div class="dashboard-watch-add">
+        <input class="search server-finder-input" id="dashboard-api-key" type="text" readonly placeholder="Click Generate" autocomplete="off">
+        <button type="button" class="btn dashboard-api-generate" id="dashboard-api-generate">Generate</button>
+        <button type="button" class="btn dashboard-api-generate" id="dashboard-api-copy">Copy</button>
+      </div>
       <label class="server-finder-label" for="dashboard-watch-id">Roblox User IDs <span class="dashboard-watch-count" id="dashboard-watch-count">0 / 10</span></label>
       <div class="dashboard-watch-add">
         <input class="search server-finder-input" id="dashboard-watch-id" type="text" placeholder="Enter user ID" autocomplete="off" inputmode="numeric" pattern="[0-9]*" oninput="this.value=this.value.replace(/[^0-9]/g,'')">
@@ -589,6 +595,9 @@
     const dashboardBackdrop = document.getElementById("dashboard-backdrop");
     const dashboardClose = document.getElementById("dashboard-close");
     const dashboardWebhook = document.getElementById("dashboard-webhook");
+    const dashboardApiKey = document.getElementById("dashboard-api-key");
+    const dashboardApiGenerate = document.getElementById("dashboard-api-generate");
+    const dashboardApiCopy = document.getElementById("dashboard-api-copy");
     const dashboardWatchId = document.getElementById("dashboard-watch-id");
     const dashboardWatchAdd = document.getElementById("dashboard-watch-add");
     const dashboardWatchList = document.getElementById("dashboard-watch-list");
@@ -745,6 +754,7 @@
             return;
           }
           dashboardWebhook.value = data.webhook || "";
+          dashboardApiKey.value = data.key || "";
           dashboardWatches = Array.isArray(data.users) ? data.users : [];
           renderDashboardWatches();
           rememberDashboardSaved();
@@ -889,6 +899,31 @@
       }
     };
     dashboardWebhook.oninput = updateDashboardSaveEnabled;
+    dashboardApiGenerate.onclick = () => {
+      dashboardApiGenerate.disabled = true;
+      dashboardStatus.textContent = "";
+      fetch("/settings/key", { method: "POST" })
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : "Could not generate key.";
+            return;
+          }
+          dashboardApiKey.value = data.key || "";
+          dashboardApiKey.select();
+          dashboardStatus.textContent = "API key generated.";
+        })
+        .catch(() => {
+          dashboardStatus.textContent = "Could not generate key.";
+        })
+        .finally(() => {
+          dashboardApiGenerate.disabled = false;
+        });
+    };
+    dashboardApiCopy.onclick = () => {
+      navigator.clipboard.writeText(dashboardApiKey.value);
+      dashboardStatus.textContent = "Copied.";
+    };
     dashboardSave.onclick = () => {
       if (!dashboardCaptchaToken) {
         dashboardStatus.textContent = "Complete captcha.";

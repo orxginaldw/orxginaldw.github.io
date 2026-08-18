@@ -29,7 +29,7 @@ export async function authMe(request, env) {
     const token = cookie(request, "discord_token");
     const user = token ? await discordUser(token) : null;
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const row = await env.DB.prepare("SELECT purchased, access, customer, webhook, users FROM users WHERE id = ?").bind(user.id).first();
+    const row = await env.DB.prepare("SELECT purchased, access, customer, webhook, users, key FROM users WHERE id = ?").bind(user.id).first();
     return json({
         premium: row ? 1 : 0,
         purchased: row && row.purchased ? row.purchased : null,
@@ -37,6 +37,7 @@ export async function authMe(request, env) {
         billing: row && row.customer ? 1 : 0,
         webhook: row && row.webhook ? row.webhook : "",
         users: row && row.users ? JSON.parse(row.users) : [],
+        key: row && row.key ? row.key : "",
         id: user.id,
     });
 }
