@@ -202,7 +202,7 @@
       </button>
       <div class="kicker">Account</div>
       <h2 id="api-key-title" class="modal-title">API key</h2>
-      <p id="api-key-hint" class="modal-meta" hidden></p>
+      <p id="api-key-hint" class="modal-meta">Keep this key private. If you think someone stole it, generate a new one.</p>
       <div id="api-key-row" class="dashboard-watch-add" hidden>
         <input class="search server-finder-input" id="api-key-value" type="text" readonly placeholder="Click Generate" autocomplete="off">
         <button type="button" class="btn dashboard-api-generate" id="api-key-generate">Generate</button>
@@ -811,8 +811,8 @@
         apiKeyAction.textContent = "Buy premium";
         return;
       }
-      apiKeyHint.hidden = true;
-      apiKeyHint.textContent = "";
+      apiKeyHint.hidden = false;
+      apiKeyHint.textContent = "Keep this key private. If you think someone stole it, generate a new one.";
       apiKeyRow.hidden = false;
       apiKeyAction.hidden = true;
       apiKeyValue.value = hopperKey;
