@@ -112,6 +112,7 @@ body {
 .brand {
   font: 800 24px/1 var(--font);
   letter-spacing: .02em;
+  text-decoration: none;
   background: linear-gradient(90deg, #eef4ff 0%, #b8d4ff 25%, var(--blue) 50%, #b8d4ff 75%, #eef4ff 100%);
   background-size: 200% 100%;
   background-position: 0 center;
@@ -317,6 +318,68 @@ button.nav-btn { appearance: none; font: inherit; }
   margin: 0 auto;
   padding: 152px 14px 32px;
 }
+
+.page--legal {
+  max-width: 760px;
+  padding-top: 96px;
+  padding-bottom: 16px;
+}
+
+.legal-title {
+  margin: 0 0 8px;
+  font-size: 28px;
+  line-height: 1.2;
+}
+
+.legal-updated {
+  margin: 0 0 18px;
+  color: #8a9ab8;
+  font-size: 12px;
+}
+
+.page--legal h2 {
+  margin: 22px 0 8px;
+  font-size: 16px;
+}
+
+.page--legal p,
+.page--legal li {
+  color: #d3ddf5;
+  line-height: 1.65;
+}
+
+.page--legal ul {
+  margin: 0 0 14px;
+  padding-left: 20px;
+}
+
+.page--legal a,
+.page--legal a:visited {
+  color: #8db7ff;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.site-footer {
+  position: relative;
+  z-index: 1;
+  max-width: 1280px;
+  margin: 0 auto;
+  padding: 8px 14px 36px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 16px;
+  color: #8a9ab8;
+  font-size: 12px;
+}
+
+.site-footer a,
+.site-footer a:visited {
+  color: #9eb0d6;
+  text-decoration: none;
+}
+
+.site-footer a:hover { color: #eef2ff; }
 
 .count { margin: 0 0 10px; color: #cad5ef; }
 .count b { color: var(--blue); font-weight: 700; }
@@ -1170,6 +1233,7 @@ body.modal-open { overflow: hidden; }
 
 @media (max-width: 760px) {
   .page { padding-top: 218px; }
+  .page--legal { padding-top: 140px; }
   .head-row { align-items: flex-start; flex-direction: column; }
   .header-nav { width: 100%; flex-wrap: wrap; justify-content: center; }
   .header-nav__sep { display: none; }

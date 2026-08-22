@@ -48,6 +48,15 @@ export default {
         };
         const handler = routes[path];
         if (handler) return handler(request, env);
+        const legal = {
+            "/privacy": "/privacy.html",
+            "/privacy/": "/privacy.html",
+            "/refund": "/refund.html",
+            "/refund/": "/refund.html",
+            "/terms": "/terms.html",
+            "/terms/": "/terms.html",
+        };
+        if (legal[path]) return env.ASSETS.fetch(new URL(legal[path], url.origin));
         return env.ASSETS.fetch(request);
     },
 };
