@@ -17,5 +17,8 @@
   "bugs": {
     "url": "https://github.com/orxginaldw/orxginaldw.github.io/issues"
   },
-  "homepage": "https://github.com/orxginaldw/orxginaldw.github.io#readme"
+  "homepage": "https://github.com/orxginaldw/orxginaldw.github.io#readme",
+  "dependencies": {
+    "@paypal/paypal-server-sdk": "^2.5.0"
+  }
 }
