@@ -1,5 +1,6 @@
 import { json, cookie } from "./util.js";
 import { discordUser } from "./discord.js";
+import { paypalSubscription } from "./paypal.js";
 
 export async function authLogin() {
     const params = new URLSearchParams({
@@ -30,11 +31,17 @@ export async function authMe(request, env) {
     const user = token ? await discordUser(token) : null;
     if (!user) return json({ error: "Unauthorized" }, 401);
     const row = await env.DB.prepare("SELECT purchased, access, customer, subscription, webhook, users, key FROM users WHERE id = ?").bind(user.id).first();
+    let status = "";
+    if (row && row.subscription) {
+        const sub = await paypalSubscription(env, row.subscription);
+        status = sub.status || "";
+    }
     return json({
-        premium: row && (row.access || row.subscription) ? 1 : 0,
+        premium: row && (row.access || status === "ACTIVE") ? 1 : 0,
         purchased: row && row.purchased ? row.purchased : null,
         access: row && row.access ? 1 : 0,
-        billing: row && row.customer ? 1 : 0,
+        billing: status === "ACTIVE" ? 1 : 0,
+        paused: status === "SUSPENDED" ? 1 : 0,
         webhook: row && row.webhook ? row.webhook : "",
         users: row && row.users ? JSON.parse(row.users) : [],
         key: row && row.key ? row.key : "",

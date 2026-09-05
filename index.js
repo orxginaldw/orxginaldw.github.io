@@ -1,6 +1,6 @@
 import { json } from "./js/util.js";
 import { authLogin, authPage, authMe, authIp } from "./js/auth.js";
-import { paypalCheckout, paypalPortal, paypalWebhook } from "./js/paypal.js";
+import { paypalCheckout, paypalCancel, paypalResume, paypalWebhook } from "./js/paypal.js";
 import { addUser, saveSettings, removeUser, generateKey } from "./js/dashboard.js";
 
 async function count(_request, env) {
@@ -36,7 +36,8 @@ export default {
         if (path === "/auth/me" && request.method === "POST") return authMe(request, env);
         if (path === "/auth/ip" && request.method === "GET") return authIp(request);
         if (path === "/paypal/checkout" && request.method === "POST") return paypalCheckout(request, env);
-        if (path === "/paypal/portal" && request.method === "POST") return paypalPortal(request, env);
+        if (path === "/paypal/cancel" && request.method === "POST") return paypalCancel(request, env);
+        if (path === "/paypal/resume" && request.method === "POST") return paypalResume(request, env);
         if (path === "/paypal/webhook" && request.method === "POST") return paypalWebhook(request, env);
         if (path === "/settings/add" && request.method === "POST") return addUser(request, env);
         if (path === "/settings/remove" && request.method === "POST") return removeUser(request, env);

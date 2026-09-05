@@ -14,6 +14,14 @@ async function paypalToken(env) {
     return data.access_token;
 }
 
+export async function paypalSubscription(env, id) {
+    const access = await paypalToken(env);
+    const res = await fetch("https://api-m.paypal.com/v1/billing/subscriptions/" + id, {
+        headers: { Authorization: "Bearer " + access },
+    });
+    return res.json();
+}
+
 async function setPremium(env, discordId, username, extra = {}) {
     await ensureUsers(env);
     const purchased = Math.floor(Date.now() / 1000);
@@ -27,6 +35,14 @@ async function setPremium(env, discordId, username, extra = {}) {
 async function clearPremium(env, discordId) {
     await env.DB.prepare(
         "UPDATE users SET purchased = NULL, customer = NULL, subscription = NULL WHERE id = ? AND IFNULL(access, 0) = 0",
+    )
+        .bind(discordId)
+        .run();
+}
+
+async function pausePremium(env, discordId) {
+    await env.DB.prepare(
+        "UPDATE users SET purchased = NULL WHERE id = ? AND IFNULL(access, 0) = 0",
     )
         .bind(discordId)
         .run();
@@ -63,13 +79,65 @@ export async function paypalCheckout(request, env) {
     return json({ url });
 }
 
-export async function paypalPortal(request, env) {
+export async function paypalCancel(request, env) {
     const token = cookie(request, "discord_token");
     const user = token ? await discordUser(token) : null;
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const row = await env.DB.prepare("SELECT customer FROM users WHERE id = ?").bind(user.id).first();
-    if (!row || !row.customer) return json({ error: "Forbidden" }, 403);
-    return json({ url: "https://www.paypal.com/myaccount/autopay" });
+    const row = await env.DB.prepare("SELECT subscription FROM users WHERE id = ?").bind(user.id).first();
+    if (!row || !row.subscription) return json({ error: "Forbidden" }, 403);
+    const access = await paypalToken(env);
+    await fetch("https://api-m.paypal.com/v1/billing/subscriptions/" + row.subscription + "/suspend", {
+        method: "POST",
+        headers: {
+            Authorization: "Bearer " + access,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ reason: "Customer-requested pause" }),
+    });
+    await pausePremium(env, user.id);
+    return json({ ok: true });
+}
+
+export async function paypalResume(request, env) {
+    const token = cookie(request, "discord_token");
+    const user = token ? await discordUser(token) : null;
+    if (!user) return json({ error: "Unauthorized" }, 401);
+    const row = await env.DB.prepare("SELECT subscription FROM users WHERE id = ?").bind(user.id).first();
+    if (!row || !row.subscription) return json({ error: "Forbidden" }, 403);
+    const sub = await paypalSubscription(env, row.subscription);
+    if (sub.status === "CANCELLED" || sub.status === "EXPIRED") {
+        await clearPremium(env, user.id);
+        return paypalCheckout(request, env);
+    }
+    const access = await paypalToken(env);
+    const owed = sub.billing_info && sub.billing_info.outstanding_balance ? Number(sub.billing_info.outstanding_balance.value) : 0;
+    if (owed > 0) {
+        await fetch("https://api-m.paypal.com/v1/billing/subscriptions/" + row.subscription + "/capture", {
+            method: "POST",
+            headers: {
+                Authorization: "Bearer " + access,
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify({
+                note: "Outstanding balance",
+                capture_type: "OUTSTANDING_BALANCE",
+                amount: sub.billing_info.outstanding_balance,
+            }),
+        });
+    }
+    await fetch("https://api-m.paypal.com/v1/billing/subscriptions/" + row.subscription + "/activate", {
+        method: "POST",
+        headers: {
+            Authorization: "Bearer " + access,
+            "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ reason: "Reactivating on customer request" }),
+    });
+    await setPremium(env, user.id, user.username, {
+        customer: sub.subscriber ? sub.subscriber.payer_id : null,
+        subscription: row.subscription,
+    });
+    return json({ ok: true });
 }
 
 export async function paypalWebhook(request, env) {
@@ -105,7 +173,10 @@ export async function paypalWebhook(request, env) {
             subscription: resource.id,
         });
     }
-    if (type === "BILLING.SUBSCRIPTION.CANCELLED" || type === "BILLING.SUBSCRIPTION.EXPIRED" || type === "BILLING.SUBSCRIPTION.SUSPENDED") {
+    if (type === "BILLING.SUBSCRIPTION.SUSPENDED") {
+        await pausePremium(env, String(discordId));
+    }
+    if (type === "BILLING.SUBSCRIPTION.CANCELLED" || type === "BILLING.SUBSCRIPTION.EXPIRED") {
         await clearPremium(env, String(discordId));
     }
     if (type === "BILLING.SUBSCRIPTION.UPDATED") {
@@ -114,7 +185,9 @@ export async function paypalWebhook(request, env) {
                 customer: payer,
                 subscription: resource.id,
             });
-        } else if (resource.status === "CANCELLED" || resource.status === "EXPIRED" || resource.status === "SUSPENDED") {
+        } else if (resource.status === "SUSPENDED") {
+            await pausePremium(env, String(discordId));
+        } else if (resource.status === "CANCELLED" || resource.status === "EXPIRED") {
             await clearPremium(env, String(discordId));
         }
     }
