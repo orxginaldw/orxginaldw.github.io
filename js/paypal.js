@@ -1,15 +1,17 @@
-import { ApplicationContextUserAction, Client, Environment, ExperienceContextShippingPreference, SubscriptionsController } from "@paypal/paypal-server-sdk";
 import { json, cookie, ensureUsers } from "./util.js";
 import { discordUser } from "./discord.js";
 
-function paypalClient(env) {
-    return new Client({
-        clientCredentialsAuthCredentials: {
-            oAuthClientId: env.PAYPAL_ID,
-            oAuthClientSecret: env.PAYPAL_SECRET,
+async function paypalToken(env) {
+    const res = await fetch("https://api-m.paypal.com/v1/oauth2/token", {
+        method: "POST",
+        headers: {
+            Authorization: "Basic " + btoa(env.PAYPAL_ID + ":" + env.PAYPAL_SECRET),
+            "Content-Type": "application/x-www-form-urlencoded",
         },
-        environment: Environment.Production,
+        body: "grant_type=client_credentials",
     });
+    const data = await res.json();
+    return data.access_token;
 }
 
 async function setPremium(env, discordId, username, extra = {}) {
@@ -34,22 +36,26 @@ export async function paypalCheckout(request, env) {
     const token = cookie(request, "discord_token");
     const user = token ? await discordUser(token) : null;
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const subscriptions = new SubscriptionsController(paypalClient(env));
-    const response = await subscriptions.createSubscription({
-        prefer: "return=representation",
-        body: {
-            planId: env.PAYPAL_PLAN,
-            customId: user.id,
-            applicationContext: {
-                brandName: "Binwoken",
-                returnUrl: "https://binwoken.sh/?premium=1",
-                cancelUrl: "https://binwoken.sh/",
-                shippingPreference: ExperienceContextShippingPreference.NoShipping,
-                userAction: ApplicationContextUserAction.SubscribeNow,
-            },
+    const access = await paypalToken(env);
+    const res = await fetch("https://api-m.paypal.com/v1/billing/subscriptions", {
+        method: "POST",
+        headers: {
+            Authorization: "Bearer " + access,
+            "Content-Type": "application/json",
         },
+        body: JSON.stringify({
+            plan_id: env.PAYPAL_PLAN,
+            custom_id: user.id,
+            application_context: {
+                brand_name: "Binwoken",
+                return_url: "https://binwoken.sh/?premium=1",
+                cancel_url: "https://binwoken.sh/",
+                shipping_preference: "NO_SHIPPING",
+                user_action: "SUBSCRIBE_NOW",
+            },
+        }),
     });
-    const sub = response.result;
+    const sub = await res.json();
     let url = "";
     for (const link of sub.links) {
         if (link.rel === "approve") url = link.href;
@@ -69,12 +75,11 @@ export async function paypalPortal(request, env) {
 export async function paypalWebhook(request, env) {
     const raw = await request.text();
     const event = JSON.parse(raw);
-    const client = paypalClient(env);
-    const oauth = await client.clientCredentialsAuthManager.fetchToken();
+    const access = await paypalToken(env);
     const verify = await fetch("https://api-m.paypal.com/v1/notifications/verify-webhook-signature", {
         method: "POST",
         headers: {
-            Authorization: "Bearer " + oauth.accessToken,
+            Authorization: "Bearer " + access,
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
