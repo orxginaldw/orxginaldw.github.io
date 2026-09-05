@@ -1,6 +1,6 @@
 import { json } from "./js/util.js";
 import { authLogin, authPage, authMe, authIp } from "./js/auth.js";
-import { stripeCheckout, stripePortal, stripeWebhook } from "./js/stripe.js";
+import { paypalCheckout, paypalPortal, paypalWebhook } from "./js/paypal.js";
 import { addUser, saveSettings, removeUser, generateKey } from "./js/dashboard.js";
 
 async function count(_request, env) {
@@ -35,9 +35,9 @@ export default {
         if (path === "/auth" && request.method === "GET") return authPage();
         if (path === "/auth/me" && request.method === "POST") return authMe(request, env);
         if (path === "/auth/ip" && request.method === "GET") return authIp(request);
-        if (path === "/stripe/checkout" && request.method === "POST") return stripeCheckout(request, env);
-        if (path === "/stripe/portal" && request.method === "POST") return stripePortal(request, env);
-        if (path === "/stripe/webhook" && request.method === "POST") return stripeWebhook(request, env);
+        if (path === "/paypal/checkout" && request.method === "POST") return paypalCheckout(request, env);
+        if (path === "/paypal/portal" && request.method === "POST") return paypalPortal(request, env);
+        if (path === "/paypal/webhook" && request.method === "POST") return paypalWebhook(request, env);
         if (path === "/settings/add" && request.method === "POST") return addUser(request, env);
         if (path === "/settings/remove" && request.method === "POST") return removeUser(request, env);
         if (path === "/settings" && request.method === "POST") return saveSettings(request, env);

@@ -19,6 +19,6 @@
   },
   "homepage": "https://github.com/orxginaldw/orxginaldw.github.io#readme",
   "dependencies": {
-    "stripe": "^22.4.0"
+    "@paypal/paypal-server-sdk": "^2.5.0"
   }
 }

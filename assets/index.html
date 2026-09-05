@@ -506,7 +506,7 @@
         if (!response.ok) {
           clearSearchDots();
           const err = await response.json().catch(() => ({}));
-          setServerFinderResult(err?.error === "Premium" ? "Premium only." : err?.error === "Unauthorized" ? "Unauthorized." : err?.error === "Recaptcha" ? "Complete captcha." : "Search failed.");
+          setServerFinderResult(err?.message || "Search failed.");
           resetCaptcha();
           return;
         }
@@ -917,7 +917,7 @@
       location.href = "/auth/login";
     };
     profilePremium.onclick = () => {
-      fetch("/stripe/checkout", { method: "POST" })
+      fetch("/paypal/checkout", { method: "POST" })
         .then((response) => response.json())
         .then((data) => {
           if (data.url) location.href = data.url;
@@ -933,7 +933,7 @@
       openDashboard();
     };
     profileBilling.onclick = () => {
-      fetch("/stripe/portal", { method: "POST" })
+      fetch("/paypal/portal", { method: "POST" })
         .then((response) => response.json())
         .then((data) => {
           if (data.url) location.href = data.url;
@@ -952,7 +952,7 @@
         return;
       }
       if (!isPremium) {
-        fetch("/stripe/checkout", { method: "POST" })
+        fetch("/paypal/checkout", { method: "POST" })
           .then((response) => response.json())
           .then((data) => {
             if (data.url) location.href = data.url;

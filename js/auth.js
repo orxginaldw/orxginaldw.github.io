@@ -29,9 +29,9 @@ export async function authMe(request, env) {
     const token = cookie(request, "discord_token");
     const user = token ? await discordUser(token) : null;
     if (!user) return json({ error: "Unauthorized" }, 401);
-    const row = await env.DB.prepare("SELECT purchased, access, customer, webhook, users, key FROM users WHERE id = ?").bind(user.id).first();
+    const row = await env.DB.prepare("SELECT purchased, access, customer, subscription, webhook, users, key FROM users WHERE id = ?").bind(user.id).first();
     return json({
-        premium: row ? 1 : 0,
+        premium: row && (row.access || row.subscription) ? 1 : 0,
         purchased: row && row.purchased ? row.purchased : null,
         access: row && row.access ? 1 : 0,
         billing: row && row.customer ? 1 : 0,
