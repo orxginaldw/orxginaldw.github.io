@@ -1,4 +1,4 @@
-import { ApplicationContextUserAction, Client, Environment, SubscriptionsController } from "@paypal/paypal-server-sdk";
+import { ApplicationContextUserAction, Client, Environment, ExperienceContextShippingPreference, SubscriptionsController } from "@paypal/paypal-server-sdk";
 import { json, cookie, ensureUsers } from "./util.js";
 import { discordUser } from "./discord.js";
 
@@ -44,6 +44,7 @@ export async function paypalCheckout(request, env) {
                 brandName: "Binwoken",
                 returnUrl: "https://binwoken.sh/?premium=1",
                 cancelUrl: "https://binwoken.sh/",
+                shippingPreference: ExperienceContextShippingPreference.NoShipping,
                 userAction: ApplicationContextUserAction.SubscribeNow,
             },
         },
