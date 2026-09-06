@@ -1037,6 +1037,7 @@
       apiKeyStatus.textContent = "Copied.";
     };
     billingAction.onclick = () => {
+      if (!hasPaused && !confirm("Are you sure you want to cancel your subscription?")) return;
       billingAction.disabled = true;
       billingStatus.textContent = "";
       fetch(hasPaused ? "/paypal/resume" : "/paypal/cancel", { method: "POST" })
