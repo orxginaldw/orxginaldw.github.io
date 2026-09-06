@@ -597,6 +597,7 @@
         ...(data.certain_alts || []),
         ...(data.medium_confidence_alts || []),
         ...(data.possible_alts || []),
+        data.certain_preview,
         ...((data.graph && data.graph.nodes) || data.nodes || []),
       ];
       const seen = new Set();
@@ -605,18 +606,21 @@
       for (const row of rows) {
         if (!row) continue;
         if (typeof row === "string") {
-          if (!seen.has(row)) {
+          if (row !== target && !seen.has(row)) {
             seen.add(row);
             lines.push(row);
           }
           continue;
         }
-        const id = String(row.id || row.user_id || row.discord_id || "");
+        const user = row.user || row;
+        const id = String(user.id || row.id || row.user_id || row.discord_id || "");
         if (!id || id === target || seen.has(id)) continue;
         seen.add(id);
-        const name = row.username || row.global_name || row.name || row.tag || "";
+        const name = user.username || user.global_name || user.name || user.tag || "";
         lines.push(name ? name + " (" + id + ")" : id);
       }
+      const hidden = Math.max(0, Number(data.total_alts || 0) - lines.length);
+      if (hidden) lines.push("+" + hidden + " more");
       return lines.length ? lines.join("\n") : "No alts found.";
     };
 
