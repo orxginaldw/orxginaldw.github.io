@@ -865,6 +865,7 @@ button.nav-btn { appearance: none; font: inherit; }
 #api-key-modal .search { padding: 11px 12px; font-size: 14px; }
 
 #billing-modal .panel { width: min(480px, 100%); }
+#billing-modal.billing-confirm .panel { width: min(340px, 100%); }
 #billing-modal .btn {
   width: 100%;
   margin-top: 0;
@@ -879,6 +880,8 @@ button.nav-btn { appearance: none; font: inherit; }
   background: linear-gradient(180deg, #8a2f2f, #6b2222);
 }
 #billing-modal .btn.billing-cancel:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); border-color: #b04a4a; box-shadow: none; }
+#billing-modal .billing-confirm-row { display: flex; gap: 8px; }
+#billing-modal .billing-confirm-row .btn { width: auto; flex: 1; }
 
 #modal .backdrop { background: rgba(2, 4, 9, .8); backdrop-filter: blur(6px); opacity: 0; }
 #modal.open .backdrop { animation: fadeIn .28s ease forwards; }

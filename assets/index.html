@@ -210,6 +210,10 @@
       <h2 id="billing-title" class="modal-title">Manage billing</h2>
       <p id="billing-hint" class="modal-meta"></p>
       <button type="button" class="btn" id="billing-action"></button>
+      <div id="billing-confirm" class="billing-confirm-row" hidden>
+        <button type="button" class="btn" id="billing-no">No</button>
+        <button type="button" class="btn billing-cancel" id="billing-yes">Yes</button>
+      </div>
       <p id="billing-status" class="modal-meta"></p>
     </div>
   </div>
@@ -636,8 +640,12 @@
     const billingModal = document.getElementById("billing-modal");
     const billingBackdrop = document.getElementById("billing-backdrop");
     const billingClose = document.getElementById("billing-close");
+    const billingTitle = document.getElementById("billing-title");
     const billingHint = document.getElementById("billing-hint");
     const billingAction = document.getElementById("billing-action");
+    const billingConfirm = document.getElementById("billing-confirm");
+    const billingNo = document.getElementById("billing-no");
+    const billingYes = document.getElementById("billing-yes");
     const billingStatus = document.getElementById("billing-status");
     const apiKeyModal = document.getElementById("api-key-modal");
     const apiKeyBackdrop = document.getElementById("api-key-backdrop");
@@ -870,6 +878,11 @@
       document.body.classList.remove("modal-open");
     };
     const syncBillingPanel = () => {
+      billingModal.classList.remove("billing-confirm");
+      billingTitle.textContent = "Manage billing";
+      billingConfirm.hidden = true;
+      billingAction.hidden = false;
+      billingYes.disabled = false;
       billingStatus.textContent = "";
       billingAction.disabled = false;
       if (hasBilling) {
@@ -881,6 +894,37 @@
       billingHint.textContent = "Your plan is paused. You are not being charged. Resubscribe turns it back on.";
       billingAction.textContent = "Resubscribe";
       billingAction.className = "btn";
+    };
+    const showBillingConfirm = () => {
+      billingModal.classList.add("billing-confirm");
+      billingTitle.textContent = "Are you sure?";
+      billingHint.textContent = "This pauses billing. You can resubscribe later.";
+      billingAction.hidden = true;
+      billingConfirm.hidden = false;
+      billingStatus.textContent = "";
+    };
+    const runBillingAction = (paused) => {
+      const btn = paused ? billingAction : billingYes;
+      btn.disabled = true;
+      billingStatus.textContent = "";
+      fetch(paused ? "/paypal/resume" : "/paypal/cancel", { method: "POST" })
+        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
+        .then(({ ok, data }) => {
+          if (!ok) {
+            billingStatus.textContent = "Could not update plan.";
+            btn.disabled = false;
+            return;
+          }
+          if (data.url) {
+            location.href = data.url;
+            return;
+          }
+          return loadPremium().then(() => syncBillingPanel());
+        })
+        .catch(() => {
+          billingStatus.textContent = "Could not update plan.";
+          btn.disabled = false;
+        });
     };
     const openBilling = () => {
       syncBillingPanel();
@@ -1037,28 +1081,11 @@
       apiKeyStatus.textContent = "Copied.";
     };
     billingAction.onclick = () => {
-      if (!hasPaused && !confirm("Are you sure you want to cancel your subscription?")) return;
-      billingAction.disabled = true;
-      billingStatus.textContent = "";
-      fetch(hasPaused ? "/paypal/resume" : "/paypal/cancel", { method: "POST" })
-        .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
-        .then(({ ok, data }) => {
-          if (!ok) {
-            billingStatus.textContent = "Could not update plan.";
-            billingAction.disabled = false;
-            return;
-          }
-          if (data.url) {
-            location.href = data.url;
-            return;
-          }
-          return loadPremium().then(() => syncBillingPanel());
-        })
-        .catch(() => {
-          billingStatus.textContent = "Could not update plan.";
-          billingAction.disabled = false;
-        });
+      if (hasPaused) runBillingAction(true);
+      else showBillingConfirm();
     };
+    billingNo.onclick = syncBillingPanel;
+    billingYes.onclick = () => runBillingAction(false);
     billingClose.onclick = closeBilling;
     billingBackdrop.onclick = closeBilling;
     apiKeyClose.onclick = closeApiKey;
