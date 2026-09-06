@@ -593,15 +593,31 @@
     };
 
     const formatAltMatches = (data) => {
-      const rows = data.accounts || data.alts || data.matches || data.users || data.results;
-      if (!Array.isArray(rows) || !rows.length) return "No alts found.";
-      return rows.map((row) => {
-        if (typeof row === "string") return row;
-        const name = row.username || row.name || row.tag || "";
-        const id = row.id || row.user_id || row.discord_id || "";
-        if (name && id) return name + " (" + id + ")";
-        return name || id || JSON.stringify(row);
-      }).join("\n");
+      const rows = [
+        ...(data.certain_alts || []),
+        ...(data.medium_confidence_alts || []),
+        ...(data.possible_alts || []),
+        ...((data.graph && data.graph.nodes) || data.nodes || []),
+      ];
+      const seen = new Set();
+      const target = altFinderUserId.value.trim();
+      const lines = [];
+      for (const row of rows) {
+        if (!row) continue;
+        if (typeof row === "string") {
+          if (!seen.has(row)) {
+            seen.add(row);
+            lines.push(row);
+          }
+          continue;
+        }
+        const id = String(row.id || row.user_id || row.discord_id || "");
+        if (!id || id === target || seen.has(id)) continue;
+        seen.add(id);
+        const name = row.username || row.global_name || row.name || row.tag || "";
+        lines.push(name ? name + " (" + id + ")" : id);
+      }
+      return lines.length ? lines.join("\n") : "No alts found.";
     };
 
     const openAltFinder = () => {
