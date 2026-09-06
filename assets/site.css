@@ -540,7 +540,8 @@ button.nav-btn { appearance: none; font: inherit; }
   animation: modalIn .28s cubic-bezier(.2, .8, .2, 1) both;
 }
 
-#server-finder-modal .panel { width: min(560px, 100%); }
+#server-finder-modal .panel,
+#alt-finder-modal .panel { width: min(560px, 100%); }
 #dashboard-modal .panel { width: min(560px, 100%); }
 
 .dashboard-watch-count {
@@ -1136,7 +1137,9 @@ button.nav-btn { appearance: none; font: inherit; }
 
 .server-finder-search:disabled,
 #server-finder-modal .btn.server-finder-search:disabled,
-#server-finder-modal .btn.server-finder-search:disabled:hover {
+#server-finder-modal .btn.server-finder-search:disabled:hover,
+#alt-finder-modal .btn.server-finder-search:disabled,
+#alt-finder-modal .btn.server-finder-search:disabled:hover {
   cursor: not-allowed;
   opacity: 1;
   filter: none;
@@ -1219,7 +1222,10 @@ button.nav-btn { appearance: none; font: inherit; }
   transform: translate(-50%, 0);
 }
 
-#server-finder-modal .btn {
+.alt-finder-result { white-space: pre-wrap; }
+
+#server-finder-modal .btn,
+#alt-finder-modal .btn {
   margin-top: 0;
   position: static;
   overflow: visible;
@@ -1227,10 +1233,14 @@ button.nav-btn { appearance: none; font: inherit; }
   transition: transform .22s cubic-bezier(.2, .8, .2, 1), filter .22s, border-color .22s;
 }
 
-#server-finder-modal .btn::before { display: none; }
-#server-finder-modal .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); border-color: #5f84cb; box-shadow: none; }
-#server-finder-modal .btn:active:not(:disabled) { transform: translateY(-1px); }
-#server-finder-modal .search { padding: 11px 12px; font-size: 14px; }
+#server-finder-modal .btn::before,
+#alt-finder-modal .btn::before { display: none; }
+#server-finder-modal .btn:hover:not(:disabled),
+#alt-finder-modal .btn:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); border-color: #5f84cb; box-shadow: none; }
+#server-finder-modal .btn:active:not(:disabled),
+#alt-finder-modal .btn:active:not(:disabled) { transform: translateY(-1px); }
+#server-finder-modal .search,
+#alt-finder-modal .search { padding: 11px 12px; font-size: 14px; }
 
 body.modal-open { overflow: hidden; }
 

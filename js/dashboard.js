@@ -110,7 +110,10 @@ export async function saveSettings(request, env) {
 }
 
 export async function generateKey(request, env) {
-    const me = await (await authMe(request, env)).json();
+    const response = await authMe(request, env);
+    if (!response.ok) return response;
+    const me = await response.json();
+    if (!me.premium) return json({ error: "Premium" }, 403);
     const key = [...crypto.getRandomValues(new Uint8Array(40))].map((b) => b.toString(16).padStart(2, "0")).join("");
     await env.DB.prepare("UPDATE users SET key = ? WHERE id = ?").bind(key, me.id).run();
     return json({ key });

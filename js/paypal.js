@@ -1,4 +1,4 @@
-import { json, cookie, ensureUsers } from "./util.js";
+import { json, cookie } from "./util.js";
 import { discordUser } from "./discord.js";
 
 async function paypalToken(env) {
@@ -23,7 +23,6 @@ export async function paypalSubscription(env, id) {
 }
 
 async function setPremium(env, discordId, username, extra = {}) {
-    await ensureUsers(env);
     const purchased = Math.floor(Date.now() / 1000);
     await env.DB.prepare(
         "INSERT INTO users (id, username, purchased, customer, subscription) VALUES (?, ?, ?, ?, ?) ON CONFLICT(id) DO UPDATE SET username = excluded.username, purchased = COALESCE(users.purchased, excluded.purchased), customer = COALESCE(excluded.customer, users.customer), subscription = COALESCE(excluded.subscription, users.subscription)",
