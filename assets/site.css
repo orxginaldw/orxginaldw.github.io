@@ -881,6 +881,7 @@ button.nav-btn { appearance: none; font: inherit; }
 }
 #billing-modal .btn.billing-cancel:hover:not(:disabled) { filter: brightness(1.08); transform: translateY(-1px); border-color: #b04a4a; box-shadow: none; }
 #billing-modal .billing-confirm-row { display: flex; gap: 8px; }
+#billing-modal .billing-confirm-row[hidden] { display: none; }
 #billing-modal .billing-confirm-row .btn { width: auto; flex: 1; }
 
 #modal .backdrop { background: rgba(2, 4, 9, .8); backdrop-filter: blur(6px); opacity: 0; }
