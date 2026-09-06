@@ -60,7 +60,7 @@ export async function paypalCheckout(request, env) {
             "Content-Type": "application/json",
         },
         body: JSON.stringify({
-            plan_id: "P-13Y246981T925843WNKOKXWA",
+            plan_id: env.PAYPAL_PLAN,
             custom_id: user.id,
             application_context: {
                 brand_name: "Binwoken",
