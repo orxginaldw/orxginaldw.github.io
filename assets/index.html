@@ -697,6 +697,18 @@
       }
     };
 
+    const parseRealm = (realm) => {
+      if (!realm) return "";
+      let space = realm[0];
+      for (const character of realm.slice(1)) {
+        if (character === character.toUpperCase() && character !== character.toLowerCase() && space.slice(-1) !== " ") {
+          space += " ";
+        }
+        space += character;
+      }
+      return space;
+    };
+
     const searchServerFinder = async () => {
       if (!isPremium || serverFinderSearch.disabled) return;
       const userId = serverFinderUserId.value.trim();
@@ -743,7 +755,7 @@
             const trackJson = await trackResponse.json();
             if (trackJson?.count != null) setServerFinderCount(trackJson.count);
           }
-          setServerFinderResult(`Server: ${json.serverName} | Realm: ${json.realmName}`);
+          setServerFinderResult(`Server: ${json.serverName} | Realm: ${parseRealm(json.realmName)}`);
           return;
         }
         setServerFinderResult("Not found.");
@@ -1320,7 +1332,7 @@
         .then((response) => response.json().then((data) => ({ ok: response.ok, data })))
         .then(({ ok, data }) => {
           if (!ok) {
-            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to add watches." : data?.error === "Invalid" ? "Invalid user." : "Could not add user.";
+            dashboardStatus.textContent = data?.error === "Premium" ? "Premium only." : data?.error === "Unauthorized" ? "Log in to add watches." : data?.error === "Invalid" ? "Invalid user." : data?.error === "Roblox" ? "Roblox is busy, try again." : "Could not add user.";
             return;
           }
           dashboardWatches.push({ id: data.id, username: data.username, thumbnail: data.thumbnail, added: data.added, refreshed: data.refreshed });
