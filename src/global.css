@@ -1,0 +1,324 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: dark;
+    --background: 13% 0.005 250;
+    --foreground: 96% 0.003 250;
+    --header: 13% 0.005 250;
+    --search: 18% 0.005 250;
+    --footer: 15% 0.005 250;
+    --card: 16% 0.005 250;
+    --card-hover: 19% 0.005 250;
+    --tile: 15% 0.005 250;
+    --input: 14% 0.005 250;
+    --code: 11% 0.005 250;
+    --border: 22% 0.005 250;
+    --primary: 96% 0.003 250;
+    --primary-hover: 90% 0.003 250;
+    --primary-foreground: 15% 0.005 250;
+    --secondary: 19% 0.005 250;
+    --muted-foreground: 70% 0.005 250;
+    --placeholder: 52% 0.005 250;
+    --accent: 96% 0.003 250;
+    --success: 70% 0.16 152;
+    --warning: 78% 0.12 85;
+    --destructive: 72% 0.14 25;
+    --radius: 8px;
+    --ease: cubic-bezier(0.22, 0.61, 0.22, 1);
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    @apply bg-background;
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-attachment: fixed;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans text-[14px] leading-[1.5];
+    background-image:
+      linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px);
+    background-size: 48px 48px;
+    background-attachment: fixed;
+    padding-bottom: 56px;
+  }
+
+  a {
+    @apply text-foreground no-underline hover:underline;
+  }
+
+  button {
+    font: inherit;
+    color: inherit;
+  }
+
+  svg {
+    display: block;
+  }
+
+  img {
+    -webkit-user-drag: none;
+    user-select: none;
+    pointer-events: none;
+  }
+
+  input::placeholder {
+    color: oklch(var(--placeholder));
+  }
+}
+
+@layer components {
+  .btn-dark {
+    @apply inline-flex h-8 items-center justify-center rounded-md border border-primary bg-primary px-3 font-medium text-primary-foreground hover:bg-primary-hover hover:no-underline disabled:opacity-45;
+  }
+
+  .btn-ghost {
+    @apply inline-flex h-8 items-center justify-center gap-1.5 rounded-md border border-border bg-transparent px-3 font-medium text-foreground hover:bg-card-hover hover:no-underline disabled:border-secondary disabled:text-[oklch(45%_0.005_250)] disabled:hover:bg-transparent;
+  }
+
+  .ghost {
+    @apply inline-flex h-9 items-center justify-center rounded-md border border-border bg-transparent px-3.5 font-medium text-foreground hover:bg-card-hover hover:no-underline disabled:cursor-default disabled:border-secondary disabled:text-[oklch(45%_0.005_250)] disabled:hover:bg-transparent;
+  }
+
+  .card {
+    @apply rounded-lg border border-border bg-card;
+  }
+
+  .panel {
+    @apply card;
+  }
+
+  .panel-h {
+    @apply mb-3.5 flex items-baseline justify-between gap-3 text-base font-semibold tracking-[-0.02em];
+  }
+
+  .page-fade {
+  }
+
+  .page-center {
+    @apply page-fade mx-auto flex min-h-[calc(100vh-100px)] w-[min(720px,calc(100%-48px))] flex-col justify-center py-7 max-sm:w-[calc(100%-32px)];
+  }
+
+  .card-h {
+    @apply flex items-center justify-between px-[18px] pb-2 pt-3.5 text-base font-semibold tracking-[-0.02em];
+  }
+
+  .field {
+    @apply h-9 w-full rounded-md border border-border bg-input px-3 outline-none focus:outline focus:outline-1 focus:outline-muted-foreground;
+  }
+
+  .pill {
+    @apply inline-flex h-[21px] items-center rounded-full bg-secondary px-2.5 text-xs text-muted-foreground;
+  }
+
+  .pill-run {
+    @apply pill bg-[oklch(28%_0.05_152_/_0.55)] text-success;
+  }
+
+  .code {
+    @apply m-0 overflow-x-auto whitespace-pre rounded-md border border-border bg-code px-3.5 py-3 font-mono text-[12.5px] leading-[1.55];
+  }
+
+  .docs-page {
+    @apply h-[calc(100vh-116px)] overflow-hidden text-[14px] leading-[1.75] text-foreground max-sm:h-auto max-sm:overflow-visible;
+  }
+
+  .docs-layout {
+    @apply grid h-full min-h-0 grid-cols-[244px_minmax(0,1fr)] max-lg:grid-cols-[215px_minmax(0,1fr)] max-sm:block max-sm:h-auto;
+  }
+
+  .docs-sidebar {
+    @apply flex h-full min-h-0 flex-col overflow-hidden border-r border-border bg-card px-5 pb-5 pt-3 max-lg:px-3.5 max-sm:h-auto max-sm:border-b max-sm:border-r-0 max-sm:px-5 max-sm:py-3;
+  }
+
+  .docs-nav-group {
+    @apply mb-[18px] max-sm:mb-3;
+  }
+
+  .docs-parent {
+    @apply flex items-center gap-2.5 rounded-md px-3 py-2 text-[13px] font-medium text-foreground;
+  }
+
+  .docs-parent svg {
+    @apply text-muted-foreground;
+  }
+
+  .docs-subtabs {
+    @apply ml-[19px] mt-1.5 grid gap-[3px] border-l border-border pl-3 max-sm:ml-0 max-sm:mt-3 max-sm:flex max-sm:gap-1.5 max-sm:overflow-auto max-sm:border-0 max-sm:pl-0;
+  }
+
+  .docs-subtabs a {
+    @apply block rounded-md px-[11px] py-[7px] text-[12px] leading-[1.7] text-muted-foreground no-underline hover:bg-card-hover hover:text-foreground hover:no-underline max-sm:min-h-10 max-sm:whitespace-nowrap max-sm:bg-secondary max-sm:px-3 max-sm:py-2;
+  }
+
+  .docs-subtabs a[aria-current="page"] {
+    @apply bg-secondary text-foreground;
+  }
+
+  .docs-sidebar-bottom {
+    @apply mt-auto pt-6;
+  }
+
+  .docs-discord {
+    @apply flex items-center gap-2.5 rounded-md px-3 py-2.5 text-[12px] text-muted-foreground no-underline hover:bg-card-hover hover:text-foreground hover:no-underline;
+  }
+
+  .docs-discord span {
+    @apply ml-auto text-muted-foreground;
+  }
+
+  .docs-content {
+    @apply h-full min-h-0 w-full min-w-0 overflow-y-auto px-16 pb-20 pt-11 max-lg:px-[30px] max-sm:h-auto max-sm:overflow-visible max-sm:px-[22px] max-sm:pb-12 max-sm:pt-8;
+  }
+
+  .docs-content-inner {
+    @apply mx-auto w-full max-w-[880px];
+  }
+
+  .docs-content h2 {
+    @apply mb-6 mt-0 text-[27px] font-medium leading-[1.3] tracking-[-0.02em] text-foreground max-sm:text-2xl;
+  }
+
+  .docs-content h3 {
+    @apply mb-2.5 mt-6 text-base font-medium text-foreground;
+  }
+
+  .docs-content p {
+    @apply my-4 text-muted-foreground;
+  }
+
+  .docs-content ol {
+    @apply my-4 list-decimal pl-[22px] text-muted-foreground;
+  }
+
+  .docs-content li {
+    @apply py-1;
+  }
+
+  .docs-inline {
+    @apply rounded border border-border bg-secondary px-[5px] py-px font-mono text-[0.9em] text-foreground;
+  }
+
+  .docs-code {
+    @apply my-5 overflow-hidden rounded-md border border-border bg-code;
+  }
+
+  .docs-code-label {
+    @apply px-4 pt-2.5 text-[10px] text-muted-foreground;
+  }
+
+  .docs-code pre {
+    @apply m-0 overflow-auto px-4 pb-4 pt-3 font-mono text-[12px] leading-[1.85] text-foreground;
+  }
+
+  .docs-table-wrap {
+    @apply my-6 overflow-x-auto;
+  }
+
+  .docs-content table {
+    @apply w-full border-collapse text-left text-[12px];
+  }
+
+  .docs-content th {
+    @apply border-b border-border px-2.5 py-3 align-top font-medium text-foreground;
+  }
+
+  .docs-content td {
+    @apply border-b border-border px-2.5 py-3 align-top text-muted-foreground;
+  }
+
+  .docs-method {
+    @apply mb-4 flex flex-wrap items-center gap-2;
+  }
+
+  .docs-method-path {
+    @apply font-mono text-sm text-foreground;
+  }
+
+  .docs-method-badge {
+    @apply pill;
+  }
+
+  .docs-download {
+    @apply text-foreground underline decoration-[oklch(45%_0.005_250)] underline-offset-4 hover:decoration-foreground;
+  }
+
+  .modal-scrim {
+    @apply fixed inset-0 z-[300] flex items-center justify-center bg-black/55 p-6 animate-in fade-in duration-200;
+  }
+
+  .modal {
+    @apply flex max-h-[min(80vh,640px)] w-[min(720px,100%)] flex-col overflow-hidden rounded-lg border border-border bg-card shadow-[0_16px_48px_rgba(0,0,0,0.5)] animate-in fade-in zoom-in-95 slide-in-from-bottom-2 duration-200;
+  }
+
+  .drop {
+    @apply absolute right-0 top-[calc(100%+6px)] z-[200] origin-top-right overflow-hidden rounded-lg border border-border bg-card shadow-[0_12px_32px_rgba(0,0,0,0.45)] animate-in fade-in zoom-in-95 slide-in-from-top-2 duration-200;
+  }
+
+  .check {
+    @apply h-[18px] w-[18px] appearance-none rounded border border-border bg-secondary checked:border-primary checked:bg-primary;
+  }
+
+  .check:checked {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'%3E%3Cpath fill='none' stroke='%23141418' stroke-width='2' d='M3.5 8.5 6.5 11.5 12.5 4.5'/%3E%3C/svg%3E");
+  }
+
+  .check-draw {
+    stroke-dasharray: 16px;
+    stroke-dashoffset: 16px;
+    animation: check-draw 0.22s ease 0.06s forwards;
+  }
+
+  .check-draw-off {
+    stroke-dasharray: 16px;
+    stroke-dashoffset: 16px;
+  }
+
+  .bone {
+    position: relative;
+    overflow: hidden;
+    border-radius: 6px;
+    background-color: rgba(255, 255, 255, 0.06);
+  }
+
+  .bone::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(90deg, transparent 0%, rgba(255, 255, 255, 0.12) 50%, transparent 100%);
+    background-size: 200% 100%;
+    animation: boneShimmer 2s ease-in-out infinite;
+  }
+}
+
+@keyframes logIn {
+  from {
+    opacity: 0;
+    transform: translateY(3px);
+  }
+}
+
+@keyframes check-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+@keyframes boneShimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
